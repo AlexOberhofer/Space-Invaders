@@ -1,0 +1,6 @@
+*.o
+src/disassembler.o
+.git
+bin/
+.buildconfig
+.atom-dbg.cson
