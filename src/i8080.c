@@ -5,6 +5,10 @@ void fail(cpu *i8080){
       exit(1);
 }
 
+void init_8080(){
+  
+}
+
 void emulate_cycle(cpu *i8080){
 
 }

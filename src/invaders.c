@@ -1,9 +1,13 @@
 #include "i8080.h"
 #include "disassembler.h"
 
+void emu_init(){
+
+}
+
 int main(int argc, char* argv[]){
 
-    FILE *f = fopen(argv[1], "rb");
+    FILE *f = fopen("./res/invaders.rom", "rb");
     if(f == NULL){
         printf("Error Could not open %s\n", argv[1]);
     }
