@@ -20,5 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
+#include "i8080.h"
 
+void cpu_dump(cpu *c);
+void memory_dump(cpu *c);
 int disassemble(unsigned char *buffer, int pc);

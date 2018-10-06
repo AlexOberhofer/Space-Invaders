@@ -15,9 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 *******************************************************************************/
-#include "disassembler.h"
+#include "debug.h"
+#include "i8080.h"
 
+void memory_dump(cpu *c){
 
+}
+
+void cpu_dump(cpu *c){
+
+}
 /**
 * Disassembles an Intel 8080 opcode
 * buffer - Pointer to code buffer

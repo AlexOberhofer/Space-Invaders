@@ -1,5 +1,6 @@
 #include "i8080.h"
-#include "disassembler.h"
+#include "debug.h"
+
 
 #define H 256
 #define W 224
