@@ -1,6 +1,13 @@
 #include "i8080.h"
 #include "disassembler.h"
 
+#define H 256
+#define W 224
+#define F1 "res/roms/invaders.h"
+#define F2 "res/roms/invaders.g"
+#define F3 "res/roms/invaders.f"
+#define F4 "res/roms/invaders.e"
+
 void emu_init(){
 
 }

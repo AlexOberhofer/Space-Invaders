@@ -4,3 +4,4 @@ src/disassembler.o
 bin/
 .buildconfig
 .atom-dbg.cson
+res/invaders.zip

@@ -28,5 +28,8 @@ typedef struct cpu {
       uint8_t     int_enable;
 } cpu;
 
+#define VRAM_START 0x2400
+
 void fail(cpu *i8080);
 void emulate_cycle(cpu *i8080);
+int init_8080(cpu* c);
