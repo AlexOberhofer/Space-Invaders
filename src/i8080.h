@@ -33,7 +33,13 @@ typedef struct cpu {
 void fail(cpu *i8080);
 void emulate_cycle(cpu *i8080);
 cpu* init_8080(void);
+int parity(int x, int size);
+void logicFlagA(cpu* i8080);
 
 //CPU OP Functions
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval);
 void opJMPadr(cpu* c, uint8_t* opcode);
+void opLXIsp(cpu* c, uint16_t stack_val);
+void opMVIB(cpu* c, uint8_t val);
+void opANIA(cpu* c, uint8_t val);
+void opMOVDM(cpu *c, uint16_t offset);
