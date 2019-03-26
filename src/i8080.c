@@ -2,7 +2,10 @@
 #include "debug.h"
 
 void fail(cpu *i8080){
-      printf("Error: Instruction not implemented. Exiting...");
+      printf("Error: Instruction not implemented. Exiting...\n");
+      printf("DIAG INFO: \n");
+      i8080->pc--;
+      cpu_dump(i8080);
       exit(1);
 }
 
@@ -27,7 +30,7 @@ void emulate_cycle(cpu *i8080){
 
       switch (*opcode) {
           case 0x00: break;
-          case 0x01: fail(i8080); break;
+          case 0x01: opLXIB(i8080, opcode[2], opcode[1]); break;
           case 0x05: fail(i8080); break;
           case 0x06: fail(i8080); break;
           case 0x09: fail(i8080); break;
@@ -60,7 +63,7 @@ void emulate_cycle(cpu *i8080){
           case 0xaf: fail(i8080); break;
           case 0xc1: fail(i8080); break;
           case 0xc2: fail(i8080); break;
-          case 0xc3: fail(i8080); break;
+          case 0xc3: opJMPadr(i8080, opcode); break;
           case 0xc5: fail(i8080); break;
           case 0xc6: fail(i8080); break;
           case 0xc9: fail(i8080); break;
@@ -80,5 +83,14 @@ void emulate_cycle(cpu *i8080){
           default: fail(i8080);
 
       }
+}
 
+void opLXIB(cpu* c, uint8_t bval, uint8_t cval) {
+    c->c = cval;
+    c->b = bval;
+    c->pc += 2;
+}
+
+void opJMPadr(cpu* c, uint8_t* opcode){
+    c->pc = (opcode[2] << 8) | opcode[1];
 }

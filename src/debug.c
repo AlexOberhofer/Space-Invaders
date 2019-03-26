@@ -24,6 +24,26 @@ void memory_dump(cpu *c){
 
 void cpu_dump(cpu *c){
 
+    printf("\nRegisters: \n");
+    printf("A: %02x\n", c->a);
+    printf("B: %02x  ", c->b);
+    printf("C: %02x\n", c->c);
+    printf("D: %02x  ", c->d);
+    printf("E: %02x\n", c->e);
+    printf("H: %02x  ", c->h);
+    printf("L: %02x\n", c->l);
+    printf("PC: %04x\n", c->pc);
+    printf("SP: %04x\n", c->sp);
+
+    printf("\nFlags:\n");
+    printf("Z: %02x  ", c->flags.z);
+    printf("S: %02x  ", c->flags.s);
+    printf("P: %02x\n", c->flags.p);
+    printf("CY: %02x  ", c->flags.cy);
+    printf("AC: %02x  ", c->flags.ac);
+    printf("PAD: %02x\n", c->flags.pad);
+    printf("\n");
+
 }
 /**
 * Disassembles an Intel 8080 opcode
