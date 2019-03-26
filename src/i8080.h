@@ -32,4 +32,4 @@ typedef struct cpu {
 
 void fail(cpu *i8080);
 void emulate_cycle(cpu *i8080);
-int init_8080(cpu* c);
+cpu* init_8080(void);
