@@ -4,6 +4,10 @@
 int load_file_to_memory(char *file_name, cpu *c, uint16_t address_start){
       FILE *f = fopen(file_name, "rb");
 
+      if(f == NULL){
+        printf("Error Could not open %s\n", file_name);
+      }
+
       fseek (f, 0L, SEEK_END);
       int fsize = ftell(f);
       fseek(f, 0l, SEEK_SET);
