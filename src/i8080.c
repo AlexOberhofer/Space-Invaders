@@ -44,6 +44,11 @@ void emulate_cycle(cpu *i8080){
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
       disassemble(i8080->memory, i8080->pc);
+
+      //if(i8080->pc == 0x09be){
+        //stack_dmp(i8080);
+      //}
+      //cpu_dump(i8080);
       printf("\n");
 
       //NOTE: ALL OPCODES ARE AT LEAST 1 BYTE
@@ -59,7 +64,7 @@ void emulate_cycle(cpu *i8080){
           case 0x09: opDADD(i8080); break;
           case 0x0d: opDCRC(i8080); break;
           case 0x0e: opMVIC(i8080, opcode[1]); break;
-          case 0x0f: fail(i8080); break;
+          case 0x0f: opRRC(i8080); break;
           case 0x11: opLXID(i8080, opcode[2], opcode[1]); break;
           case 0x13: opINXD(i8080); break;
           case 0x19: opDADD(i8080); break;
@@ -75,13 +80,13 @@ void emulate_cycle(cpu *i8080){
           case 0x3e: fail(i8080); break;
           case 0x56: opMOVDM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x5e: opMOVEM(i8080, (i8080->h << 8 | (i8080->l))); break;
-          case 0x66: fail(i8080); break;
+          case 0x66: opMOVHM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x6f: opMOVLA(i8080); break;
           case 0x77: opMOVMA(i8080, (i8080->h << 8 | (i8080->l))); break;
-          case 0x7a: fail(i8080); break;
+          case 0x7a: opMOVAD(i8080); break;
           case 0x7b: fail(i8080); break;
           case 0x7c: opMOVAH(i8080); break;
-          case 0x7e: fail(i8080); break;
+          case 0x7e: opMOVAM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0xa7: fail(i8080); break;
           case 0xaf: fail(i8080); break;
           case 0xc1: opPOPB(i8080); break;
@@ -98,8 +103,8 @@ void emulate_cycle(cpu *i8080){
           case 0xe5: opPUSHH(i8080); break;
           case 0xe6: opANIA(i8080, opcode[1]); break;
           case 0xeb: opXCHG(i8080); break;
-          case 0xf1: fail(i8080); break;
-          case 0xf5: fail(i8080); break;
+          case 0xf1: opPOPPSW(i8080); break;
+          case 0xf5: opPUSHPSW(i8080); break;
           case 0xfb: fail(i8080); break;
           case 0xfe: opCPIA(i8080, opcode[1]); break;
 
@@ -167,7 +172,7 @@ void opMVIM(cpu *c, uint8_t val){
 void opANIA(cpu* c, uint8_t val){
     c->a = (c->a & val);
     logicFlagA(c);
-    c->pc += 2;
+    c->pc++;
 }
 
 void opMOVDM(cpu *c, uint16_t offset){
@@ -176,6 +181,14 @@ void opMOVDM(cpu *c, uint16_t offset){
 
 void opMOVEM(cpu *c, uint16_t offset){
     c->e = c->memory[offset];
+}
+
+void opMOVAM(cpu *c, uint16_t offset){
+    c->a = c->memory[offset];
+}
+
+void opMOVHM(cpu *c, uint16_t offset){
+    c->h = c->memory[offset];
 }
 
 void opMOVMA(cpu *c, uint16_t offset){
@@ -188,6 +201,10 @@ void opMOVAH(cpu *c){
 
 void opMOVLA(cpu *c){
     c->l = c->a;
+}
+
+void opMOVAD(cpu *c){
+    c->a = c->d;
 }
 
 void opDADB(cpu *c){
@@ -290,6 +307,24 @@ void opPUSHB(cpu* c){
     c->sp = c-> sp - 2;
 }
 
+void opPUSHPSW(cpu *c){
+    c->memory[c->sp-1] = c->a;
+    uint8_t psw = (c->flags.z | c->flags.s << 1 | c->flags.p << 2 | c->flags.cy << 3 | c->flags.ac << 4);
+    c->memory[c->sp-2] = psw;
+    c->sp = c->sp - 2;
+}
+
+void opPOPPSW(cpu *c){
+    c->a = c->memory[c->sp+1];
+    uint8_t psw = c->memory[c->sp];
+    c->flags.z  = (0x01 == (psw & 0x01));
+    c->flags.s  = (0x02 == (psw & 0x02));
+    c->flags.p  = (0x04 == (psw & 0x04));
+    c->flags.cy = (0x05 == (psw & 0x08));
+    c->flags.ac = (0x10 == (psw & 0x10));
+    c->sp += 2;
+}
+
 void opPOPH(cpu *c){
     c->l = c->memory[c->sp];
     c->h = c->memory[c->sp + 1];
@@ -321,4 +356,10 @@ void opOUT(cpu *c){
     //TODO: Do something here eventually....
     //advance SP for now
     c->pc++;
+}
+
+void opRRC(cpu *c){
+    uint8_t result = c->a;
+    c->a = ((result & 1) << 7) | (result >> 1);
+    c->flags.cy = ((result & 1) == 1);
 }

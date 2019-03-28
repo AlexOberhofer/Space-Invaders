@@ -26,6 +26,7 @@ typedef struct cpu {
       uint8_t     *memory;
       struct flags flags;
       uint8_t     int_enable;
+      int instructions;
 } cpu;
 
 #define VRAM_START 0x2400
@@ -49,10 +50,13 @@ void opMVIH(cpu *c, uint8_t val);
 void opMVIM(cpu *c, uint8_t val);
 void opANIA(cpu* c, uint8_t val);
 void opMOVDM(cpu *c, uint16_t offset);
+void opMOVHM(cpu *c, uint16_t offset);
 void opMOVMA(cpu *c, uint16_t offset);
 void opMOVEM(cpu *c, uint16_t offset);
+void opMOVAM(cpu *c, uint16_t offset);
 void opMOVAH(cpu *c);
 void opMOVLA(cpu *c);
+void opMOVAD(cpu *c);
 void opDADB(cpu *c);
 void opDADD(cpu *c);
 void opDADH(cpu *c);
@@ -67,8 +71,11 @@ void opCPIA(cpu *c, uint8_t value);
 void opPUSHD(cpu *c);
 void opPUSHH(cpu *c);
 void opPUSHB(cpu* c);
+void opPUSHPSW(cpu *c);
+void opPOPPSW(cpu *c);
 void opPOPH(cpu *c);
 void opPOPB(cpu *c);
 void opPOPD(cpu *c);
 void opXCHG(cpu *c);
 void opOUT(cpu *c);
+void opRRC(cpu *c);

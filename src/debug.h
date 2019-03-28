@@ -25,3 +25,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 void cpu_dump(cpu *c);
 void memory_dump(cpu *c);
 int disassemble(unsigned char *buffer, int pc);
+void stack_dmp(cpu* c);

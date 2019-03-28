@@ -28,9 +28,10 @@ int main(int argc, char* argv[]){
     if(load_file_to_memory("./res/invaders.rom", c, 0x00) != 0) {
         printf("Could not load file into system memory.");
     }
-
+    int instr = 0;
     while(1) {
       emulate_cycle(c);
+      c->instructions++;
     }
 
    return 0;

@@ -24,6 +24,8 @@ void memory_dump(cpu *c){
 
 void cpu_dump(cpu *c){
 
+    printf("Instruction Count: %d \n\n", c->instructions);
+
     printf("\nRegisters: \n");
     printf("A: %02x\n", c->a);
     printf("B: %02x  ", c->b);
@@ -44,6 +46,16 @@ void cpu_dump(cpu *c){
     printf("PAD: %02x\n", c->flags.pad);
     printf("\n");
 
+
+}
+
+void stack_dmp(cpu* c){
+    int i;
+    printf("\n");
+    for(i = 0x2400; i > (0x23ff); i--){
+        printf("%02x, %02x", c->memory[i], c->memory[i + 1]);
+    }
+    printf("\n");
 }
 /**
 * Disassembles an Intel 8080 opcode
