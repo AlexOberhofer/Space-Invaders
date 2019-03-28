@@ -38,8 +38,19 @@ void logicFlagA(cpu* i8080);
 
 //CPU OP Functions
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval);
+void opLXID(cpu* c, uint8_t dval, uint8_t eval);
+void opLXIH(cpu* c, uint8_t hval, uint8_t lval);
 void opJMPadr(cpu* c, uint8_t* opcode);
+void opJMPNZ(cpu* c, uint8_t *opcode);
 void opLXIsp(cpu* c, uint16_t stack_val);
 void opMVIB(cpu* c, uint8_t val);
 void opANIA(cpu* c, uint8_t val);
 void opMOVDM(cpu *c, uint16_t offset);
+void opMOVMA(cpu *c, uint16_t offset);
+void opDADD(cpu *c);
+void opCALLAdr(cpu *c, uint16_t return_adr, uint8_t *opcode);
+void opLDAXD(cpu *c);
+void opINXH(cpu *c);
+void opINXD(cpu *c);
+void opDCRB(cpu *c);
+void opRET(cpu *c);
