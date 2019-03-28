@@ -8,4 +8,4 @@ Alex Oberhofer
 
 ## License
 
-This project is licensed under the GNU GPL 3.0 License.
+This project is licensed under the MIT License.
