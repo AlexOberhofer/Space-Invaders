@@ -5,4 +5,5 @@ bin/
 .buildconfig
 .atom-dbg.cson
 res/invaders.zip
+res/invaders.rom
 .vscode
