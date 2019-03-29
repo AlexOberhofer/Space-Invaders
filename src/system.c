@@ -32,9 +32,10 @@ void emu_init(){
           printf("SDL_Init failed: %s\n", SDL_GetError());
           exit(1);
       } else {
-          window = SDL_CreateWindow("WINDOW_TITLE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL);
+          window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL);
           renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
           texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, W, H);
+          surface = SDL_CreateRGBSurface(0, W, H, 32, 0, 0, 0, 0);
     }
 
 /*
@@ -44,33 +45,37 @@ void emu_init(){
           exit(0);
       }
 */
-      surface = SDL_CreateRGBSurface(0, W, H, 32, 0, 0, 0, 0);
+      
 }
 
 void sdl_draw(cpu *c){
-    uint32_t *pix = surface->pixels;
+    uint32_t pix[W * H];
     int i = VRAM_START;
     for(int columns = 0; columns < W; columns++){
         for(int row = H; row > 0; row -=8){
             for(int j = 0; j < 8; j++){
+                
                 int idx = (row - j) * W + columns;
-
-                if(c->memory[i] & 1 << j){
+                int res = c->memory[i] & 1 << j;
+                
+                if(res){
                     pix[idx] = 0xFFFFFF;
                 } else {
                     pix[idx] = 0x000000;
                 }
+                
+                
             }
 
             i++;
         }
     }
 
-    SDL_UpdateTexture(texture, NULL, pix, 64*sizeof(Uint32));
+    SDL_UpdateTexture(texture, NULL, pix, W*sizeof(Uint32));
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
-    SDL_Delay(2);
+    SDL_Delay(3);
     //SDL_BlitScaled(surface, NULL, window_surface, NULL);
 
     SDL_UpdateWindowSurface(window);
@@ -92,6 +97,9 @@ int main(int argc, char* argv[]){
       emulate_cycle(c);
       sdl_draw(c);
       c->instructions++;
+      if(c->instructions > 50000){
+          exit(1);
+      }
     }
 
    return 0;
