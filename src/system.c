@@ -49,7 +49,7 @@ void emu_init(){
 }
 
 void sdl_draw(cpu *c){
-    uint32_t pix[W * H];
+    uint32_t pix[W * H * 4];
     int i = VRAM_START;
     for(int columns = 0; columns < W; columns++){
         for(int row = H; row > 0; row -=8){
@@ -59,14 +59,11 @@ void sdl_draw(cpu *c){
                 int res = c->memory[i] & 1 << j;
                 
                 if(res){
-                    pix[idx] = 0xFFFFFF;
+                   pix[idx] = 0xFFFFFF;
                 } else {
-                    pix[idx] = 0x000000;
+                   pix[idx] = 0x000000;
                 }
-                
-                
             }
-
             i++;
         }
     }
@@ -75,8 +72,7 @@ void sdl_draw(cpu *c){
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
-    SDL_Delay(3);
-    //SDL_BlitScaled(surface, NULL, window_surface, NULL);
+    //SDL_Delay(3);
 
     SDL_UpdateWindowSurface(window);
 }
@@ -94,12 +90,10 @@ int main(int argc, char* argv[]){
     }
 
     while(1) {
-      emulate_cycle(c);
+      //emulate_cycle(c);
+      Emulate8080Op(c);
       sdl_draw(c);
       c->instructions++;
-      if(c->instructions > 50000){
-          exit(1);
-      }
     }
 
    return 0;

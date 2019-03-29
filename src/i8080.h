@@ -36,7 +36,7 @@ void emulate_cycle(cpu *i8080);
 cpu* init_8080(void);
 int parity(int x, int size);
 void logicFlagA(cpu* i8080);
-
+int Emulate8080Op(cpu* state);
 //CPU OP Functions
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval);
 void opLXID(cpu* c, uint8_t dval, uint8_t eval);
@@ -45,6 +45,7 @@ void opJMPadr(cpu* c, uint8_t* opcode);
 void opJMPNZ(cpu* c, uint8_t *opcode);
 void opLXIsp(cpu* c, uint16_t stack_val);
 void opMVIB(cpu* c, uint8_t val);
+void UnimplementedInstruction(cpu *c);
 void opMVIC(cpu *c, uint8_t val);
 void opMVIH(cpu *c, uint8_t val);
 void opMVIM(cpu *c, uint8_t val);
