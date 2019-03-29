@@ -57,6 +57,7 @@ void stack_dmp(cpu* c){
     }
     printf("\n");
 }
+
 /**
 * Disassembles an Intel 8080 opcode
 * buffer - Pointer to code buffer

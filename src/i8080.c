@@ -42,6 +42,8 @@ void emulate_cycle(cpu *i8080){
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
       disassemble(i8080->memory, i8080->pc);
+      
+      cpu *state = i8080;
 
       //if(i8080->pc == 0x09be){
         //stack_dmp(i8080);
@@ -55,14 +57,17 @@ void emulate_cycle(cpu *i8080){
       i8080->pc += 1;
 
       switch (*opcode) {
+
           case 0x00: break;
           case 0x01: opLXIB(i8080, opcode[2], opcode[1]); break;
           case 0x05: opDCRB(i8080); break;
           case 0x06: opMVIB(i8080, opcode[1]); break;
-          case 0x09: opDADD(i8080); break;
+          case 0x09: opDADB(i8080); break;
           case 0x0d: opDCRC(i8080); break;
           case 0x0e: opMVIC(i8080, opcode[1]); break;
           case 0x0f: opRRC(i8080); break;
+   
+          //below good I think
           case 0x11: opLXID(i8080, opcode[2], opcode[1]); break;
           case 0x13: opINXD(i8080); break;
           case 0x19: opDADD(i8080); break;
