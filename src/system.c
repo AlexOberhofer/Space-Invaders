@@ -10,6 +10,7 @@
 #define F2 "res/roms/invaders.g"
 #define F3 "res/roms/invaders.f"
 #define F4 "res/roms/invaders.e"
+#define ROM_SINGLE_FILE "res/roms/invaders.rom"
 
 SDL_Surface *surface;
 SDL_Window *window;
@@ -18,16 +19,8 @@ SDL_Texture *texture;
 SDL_Renderer *renderer;
 
 void emu_init(){
+    //TODO: call cpu init here
 
-      /*
-    window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED,
-      SDL_WINDOWPOS_UNDEFINED, 2*W, 2*H,SDL_WINDOW_RESIZABLE);
-
-      if(!window){
-          printf("Error initializing SDL Window. Exiting...\n");
-          exit(0);
-      }
-      */
       if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
           printf("SDL_Init failed: %s\n", SDL_GetError());
           exit(1);
@@ -37,15 +30,27 @@ void emu_init(){
           texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, W, H);
           surface = SDL_CreateRGBSurface(0, W, H, 32, 0, 0, 0, 0);
     }
-
-/*
-      window_surface = SDL_GetWindowSurface(window);
-      if(!window_surface){
-          printf("Error accessing SDL window surface. Exiting...");
-          exit(0);
-      }
-*/
       
+}
+
+int process_keypress(SDL_Event *e){
+
+  const Uint8 *keys = SDL_GetKeyboardState(NULL);
+    if(keys[SDL_SCANCODE_ESCAPE])
+      return  0;
+    if(keys[SDL_SCANCODE_P]) {
+       while(1){
+         if(SDL_PollEvent(e)){
+           if(keys[SDL_SCANCODE_ESCAPE]){
+             return 0;
+           } else if(keys[SDL_SCANCODE_R]){
+             break;
+           }
+         }
+
+       }
+    }
+    return 1;
 }
 
 void sdl_draw(cpu *c){
@@ -68,18 +73,20 @@ void sdl_draw(cpu *c){
         }
     }
 
-    SDL_UpdateTexture(texture, NULL, pix, W*sizeof(Uint32));
+    SDL_UpdateTexture(texture, NULL, pix, W * sizeof(Uint32));
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
-    //SDL_Delay(3);
+    //SDL_Delay(1);
 
     SDL_UpdateWindowSurface(window);
 }
 
 int main(int argc, char* argv[]){
 
-    //int run = 0;
+    int run = 1;
+
+    SDL_Event event;
 
     emu_init();
 
@@ -89,11 +96,19 @@ int main(int argc, char* argv[]){
         printf("Could not load file into system memory.");
     }
 
-    while(1) {
-      //emulate_cycle(c);
-      Emulate8080Op(c);
+    while(run) {
+
+        if(SDL_PollEvent(&event)){
+            if(event.type == SDL_QUIT)
+            exit(1);
+        }
+
+      emulate_cycle(c);
+      //Emulate8080Op(c);
       sdl_draw(c);
       c->instructions++;
+
+      run = process_keypress(&event);
     }
 
    return 0;
