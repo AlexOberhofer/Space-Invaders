@@ -80,6 +80,7 @@ void emulate_cycle(cpu *i8080){
           case 0x29: opDADH(i8080); break;
           case 0x31: opLXIsp(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x32: opSTAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
+		  case 0x35: opDCRM(i8080); break;
           case 0x36: opMVIM(i8080, opcode[1]); break;
           case 0x3a: opLDAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x3e: opMVIA(i8080, opcode[1]); break;
@@ -99,6 +100,7 @@ void emulate_cycle(cpu *i8080){
           case 0xc3: opJMPadr(i8080, opcode); break;
           case 0xc5: opPUSHB(i8080); break;
           case 0xc6: opADIA(i8080, opcode[1]); break;
+		  case 0xc8: opRZ(i8080); break;
           case 0xc9: opRET(i8080); break;
           case 0xca: opJZadr(i8080, opcode); break;
           case 0xcd: opCALLAdr(i8080, i8080->pc+2, opcode); break;
@@ -106,6 +108,8 @@ void emulate_cycle(cpu *i8080){
           case 0xd2: opJNCadr(i8080, opcode); break;
           case 0xd3: opOUT(i8080); break;
           case 0xd5: opPUSHD(i8080); break;
+		  case 0xda: opJC(i8080, opcode); break;
+		  case 0xdb: opIN(i8080); break;
           case 0xe1: opPOPH(i8080); break;
           case 0xe5: opPUSHH(i8080); break;
           case 0xe6: opANIA(i8080, opcode[1]); break;
@@ -140,6 +144,14 @@ void opLXIH(cpu* c, uint8_t hval, uint8_t lval){
 
 void opJMPadr(cpu* c, uint8_t* opcode){
     c->pc = (opcode[2] << 8) | opcode[1];
+}
+
+void opJC(cpu *c, uint8_t *opcode){
+	if(c->flags.cy != 0){
+		c->pc = (opcode[2] << 8) | opcode[1];
+	} else {
+		c-> pc += 2;
+	}
 }
 
 void opJMPNZ(cpu* c, uint8_t *opcode){
@@ -322,6 +334,8 @@ void opDCRM(cpu *c){
     c->flags.z = (result == 0);
     c->flags.s = (0x80 == (result & 0x80));
     c->flags.p = parity(result, 8);
+	uint16_t offset = (c->h << 8)| c->l;
+	c->memory[offset] = result;
 
 }
 
@@ -437,6 +451,19 @@ void opANAA(cpu *c){
     c->a = c->a & c->a;
     logicFlagA(c);
 }
+
+void opIN(cpu *c){
+	c->pc++;
+}
+
+void opRZ(cpu *c){
+	if(c->flags.z){
+		c->pc = c->memory[c->sp] | (c->memory[c->sp + 1] << 8);
+		c->pc += 2;
+	}
+}
+
+
 
 /**
  * DEBUG CODE - KP MILLER BACKEND https://github.com/kpmiller/emulator101/blob/master/8080emu-first50.c
