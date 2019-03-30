@@ -86,6 +86,8 @@ int main(int argc, char* argv[]){
 
     int run = 1;
 
+    int int_flag = 0;
+
     SDL_Event event;
 
     emu_init();
@@ -104,8 +106,18 @@ int main(int argc, char* argv[]){
         }
 
       emulate_cycle(c);
-      //Emulate8080Op(c);
-      sdl_draw(c);
+      if(c->int_enable){
+          if(!int_flag){
+              do_interrupt(c, 1);
+              int_flag = 1;
+          } else {
+              do_interrupt(c, 2);
+              int_flag = 0;
+          }
+          
+      }
+      
+      sdl_draw(c);      
       c->instructions++;
 
       run = process_keypress(&event);

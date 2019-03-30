@@ -1,5 +1,6 @@
 #include "i8080.h"
 #include "debug.h"
+#include "memory.h"
 
 void fail(cpu *i8080){
       printf("Error: Instruction not implemented. Exiting...\n");
@@ -37,18 +38,21 @@ int parity(int x, int size){
       return (0 == (p & 0x1));
 }
 
+void do_interrupt(cpu *c, uint16_t int_num){
+
+	    stack_push(c, c->pc);
+		c->pc = 8 * int_num;
+        c->int_enable = 0;
+        
+}
+
+
 void emulate_cycle(cpu *i8080){
 
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
       disassemble(i8080->memory, i8080->pc);
       
-      cpu *state = i8080;
-
-      //if(i8080->pc == 0x09be){
-        //stack_dmp(i8080);
-      //}
-      //cpu_dump(i8080);
       printf("\n");
 
       //NOTE: ALL OPCODES ARE AT LEAST 1 BYTE
@@ -66,8 +70,6 @@ void emulate_cycle(cpu *i8080){
           case 0x0d: opDCRC(i8080); break;
           case 0x0e: opMVIC(i8080, opcode[1]); break;
           case 0x0f: opRRC(i8080); break;
-   
-          //below good I think
           case 0x11: opLXID(i8080, opcode[2], opcode[1]); break;
           case 0x13: opINXD(i8080); break;
           case 0x19: opDADD(i8080); break;
@@ -98,8 +100,10 @@ void emulate_cycle(cpu *i8080){
           case 0xc5: opPUSHB(i8080); break;
           case 0xc6: opADIA(i8080, opcode[1]); break;
           case 0xc9: opRET(i8080); break;
+          case 0xca: opJZadr(i8080, opcode); break;
           case 0xcd: opCALLAdr(i8080, i8080->pc+2, opcode); break;
           case 0xd1: opPOPD(i8080); break;
+          case 0xd2: opJNCadr(i8080, opcode); break;
           case 0xd3: opOUT(i8080); break;
           case 0xd5: opPUSHD(i8080); break;
           case 0xe1: opPOPH(i8080); break;
@@ -145,6 +149,22 @@ void opJMPNZ(cpu* c, uint8_t *opcode){
       c-> pc += 2;
     }
 }
+
+void opJZadr(cpu *c, uint8_t *opcode){
+    if(c->flags.z){
+        c->pc = (opcode[2] << 8) | opcode[1];
+    } else {
+        c-> pc += 2;
+    }
+}
+
+void opJNCadr(cpu *c, uint8_t *opcode){
+    if(c->flags.cy == 0){
+        c->pc = (opcode[2] << 8) | opcode[1];
+    } else {
+        c-> pc += 2;
+    }
+} 
 
 void opLXIsp(cpu* c, uint16_t stack_val){
     c->sp = stack_val;
