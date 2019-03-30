@@ -317,6 +317,14 @@ void opDCRC(cpu *c){
     c->c = result;
 }
 
+void opDCRM(cpu *c){
+    uint16_t result = ((c->h << 8) | c->l) - 1;
+    c->flags.z = (result == 0);
+    c->flags.s = (0x80 == (result & 0x80));
+    c->flags.p = parity(result, 8);
+
+}
+
 void opRET(cpu *c){
     c->pc = c->memory[c->sp] | (c->memory[c->sp+1] << 8);
     c->sp += 2;
