@@ -104,3 +104,5 @@ void opANAA(cpu *c);
 void opIN(cpu *c);
 void opRZ(cpu *c);
 void opDAA(cpu *c);
+
+static void Push(cpu* state, uint8_t high, uint8_t low);

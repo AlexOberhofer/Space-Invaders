@@ -114,12 +114,12 @@ int main(int argc, char* argv[]){
       Emulate8080Op(c);
       if(c->int_enable){
           if(!int_flag){
-              //do_interrupt(c, 1);
-              GenerateInterrupt(c, 1);
+              do_interrupt(c, 1);
+              //GenerateInterrupt(c, 1);
               int_flag = 1;
           } else {
-              //do_interrupt(c, 2);
-              GenerateInterrupt(c, 2);
+              do_interrupt(c, 2);
+              //GenerateInterrupt(c, 2);
               int_flag = 0;
           }
           

@@ -48,7 +48,8 @@ int parity(int x, int size){
 
 void do_interrupt(cpu *c, uint16_t int_num){
 
-	    stack_push(c, c->pc);
+	    stack_push(c, (c->pc & 0xFF00) >> 8, (c->pc & 0xff));
+		//Push(c, (c->pc & 0xFF00) >> 8, (c->pc & 0xff));
 		c->pc = 8 * int_num;
         c->int_enable = 0;
         
