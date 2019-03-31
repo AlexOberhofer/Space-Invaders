@@ -3,7 +3,7 @@
 
 void stack_push(cpu *c, int16_t address){
     
-    c->memory[c->sp+1] = (address >> 8) & 0xff;
+    c->memory[c->sp+1] = (address & 0xFF00) >> 8;
     c->memory[c->sp] = (address & 0xff);
     c->sp -= 2;
 }

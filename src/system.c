@@ -100,18 +100,26 @@ int main(int argc, char* argv[]){
 
     while(run) {
 
+          if ((c->sp == 0x2300)){
+               //printf("Stack getting dangerously low %04x\n", c->sp);
+               //exit(1);
+          }    
+
         if(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT)
             exit(1);
         }
 
-      emulate_cycle(c);
+      //emulate_cycle(c);
+      Emulate8080Op(c);
       if(c->int_enable){
           if(!int_flag){
-              do_interrupt(c, 1);
+              //do_interrupt(c, 1);
+              GenerateInterrupt(c, 1);
               int_flag = 1;
           } else {
-              do_interrupt(c, 2);
+              //do_interrupt(c, 2);
+              GenerateInterrupt(c, 2);
               int_flag = 0;
           }
           

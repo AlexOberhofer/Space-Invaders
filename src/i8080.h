@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#define PRINTOPS 0
+
 typedef struct flags {
       uint8_t     z:1;
       uint8_t     s:1;
@@ -29,6 +31,11 @@ typedef struct cpu {
       int instructions;
 } cpu;
 
+//DEBUG CODE
+static void LogicFlagsA(cpu *state);
+static void ArithFlagsA(cpu *state, uint16_t res);
+//GenerateInterrupt(cpu* state, int interrupt_num);
+
 #define VRAM_START 0x2400
 
 void fail(cpu *i8080);
@@ -36,6 +43,7 @@ void emulate_cycle(cpu *i8080);
 cpu* init_8080(void);
 int parity(int x, int size);
 void logicFlagA(cpu* i8080);
+void arithFlagA(cpu *c, uint16_t result);
 int Emulate8080Op(cpu* state);
 void do_interrupt(cpu *c, uint16_t adr);
 void UnimplementedInstruction(cpu *c);
@@ -95,3 +103,4 @@ void opEL(cpu *c);
 void opANAA(cpu *c);
 void opIN(cpu *c);
 void opRZ(cpu *c);
+void opDAA(cpu *c);
