@@ -119,10 +119,10 @@ void emulate_cycle(cpu *i8080){
           case 0xcd: opCALLAdr(i8080, i8080->pc+2, opcode); break;
           case 0xd1: opPOPD(i8080); break;
           case 0xd2: opJNCadr(i8080, opcode); break;
-          case 0xd3: opOUT(i8080); break;
+          case 0xd3: i8080->pc--; break;
           case 0xd5: opPUSHD(i8080); break;
 		  case 0xda: opJC(i8080, opcode); break;
-		  case 0xdb: opIN(i8080); break;
+		  case 0xdb: i8080->pc--; break;
           case 0xe1: opPOPH(i8080); break;
           case 0xe5: opPUSHH(i8080); break;
           case 0xe6: opANIA(i8080, opcode[1]); break;
@@ -1189,7 +1189,7 @@ int Emulate8080Op(cpu* state)
 				state->pc += 2;
 			break;
 		case 0xd3:                      //OUT d8
-			state->pc++;
+			state->pc--;
 			break;
 		case 0xd4:						//CNC adr
 			if (state->flags.cy == 0)
@@ -1239,7 +1239,7 @@ int Emulate8080Op(cpu* state)
 				state->pc += 2;
 			break;		
 		case 0xdb: 					//IN d8
-			state->pc++;
+			state->pc--;
 			break;
 		case 0xdc: 					//CC adr
 			if (state->flags.cy != 0)

@@ -12,6 +12,10 @@
 #define F4 "res/roms/invaders.e"
 #define ROM_SINGLE_FILE "res/roms/invaders.rom"
 
+uint8_t shift0;
+uint8_t shift1;
+uint8_t shift_offset;
+
 SDL_Surface *surface;
 SDL_Window *window;
 SDL_Surface *window_surface;
@@ -82,6 +86,35 @@ void sdl_draw(cpu *c){
     SDL_UpdateWindowSurface(window);
 }
 
+uint8_t machine_in(uint8_t port){
+    uint8_t a = 0;
+    switch(port){
+        case 0:
+            return 1;
+        case 1:
+            return 0;
+        case 3:{
+            uint16_t v = (shift1 << 8) | shift0;
+            return ((v >> (8 - shift_offset)) & 0xff);
+        }
+                        
+    }
+    return a;
+}
+
+void machine_out(uint8_t port, uint8_t value){
+    switch (port)
+    {
+        case 2: 
+            shift_offset = value & 0x7;
+            break;
+        case 4:
+            shift0 = shift1;
+            shift1 = value;
+            break;
+    }
+}
+
 int main(int argc, char* argv[]){
 
     int run = 1;
@@ -98,28 +131,41 @@ int main(int argc, char* argv[]){
         printf("Could not load file into system memory.");
     }
 
+ 
     while(run) {
-
-          if ((c->sp == 0x2300)){
-               //printf("Stack getting dangerously low %04x\n", c->sp);
-               //exit(1);
-          }    
 
         if(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT)
             exit(1);
         }
 
-      //emulate_cycle(c);
-      Emulate8080Op(c);
+
+    
+    uint8_t *opcode = &c->memory[c->pc];
+
+    if (*opcode == 0xdb) //machine specific handling for IN    
+    {    
+        uint8_t port = opcode[1];    
+        c->a = machine_in(port);    
+        c->pc+=2;    
+    }    
+    else if (*opcode == 0xd3)  //OUT    
+    {    
+        uint8_t port = opcode[1];    
+        machine_out(port, c->a);    
+        c->pc+=2;    
+    }    
+    else {
+        //emulate_cycle(c);
+        Emulate8080Op(c);
+    }  
+
       if(c->int_enable){
           if(!int_flag){
               do_interrupt(c, 1);
-              //GenerateInterrupt(c, 1);
               int_flag = 1;
           } else {
               do_interrupt(c, 2);
-              //GenerateInterrupt(c, 2);
               int_flag = 0;
           }
           
