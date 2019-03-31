@@ -6,6 +6,9 @@
 #define WINDOW_TITLE "Space Invaders"
 #define H 256
 #define W 224
+#define FPS 60
+#define CYCLES_PER_FRAME 2000000 / FPS // 2Mhz at 60 fps
+#define HALF_CYCLES_PER_FRAME CYCLES_PER_FRAME / 2
 #define F1 "res/roms/invaders.h"
 #define F2 "res/roms/invaders.g"
 #define F3 "res/roms/invaders.f"
@@ -15,6 +18,9 @@
 uint8_t shift0;
 uint8_t shift1;
 uint8_t shift_offset;
+
+uint32_t timer = 0;
+
 
 SDL_Surface *surface;
 SDL_Window *window;
@@ -58,6 +64,7 @@ int process_keypress(SDL_Event *e){
 }
 
 void sdl_draw(cpu *c){
+  
     uint32_t pix[W * H * 4];
     int i = VRAM_START;
     for(int columns = 0; columns < W; columns++){
@@ -76,6 +83,7 @@ void sdl_draw(cpu *c){
             i++;
         }
     }
+    
 
     SDL_UpdateTexture(texture, NULL, pix, W * sizeof(Uint32));
     SDL_RenderClear(renderer);
@@ -131,6 +139,7 @@ int main(int argc, char* argv[]){
         printf("Could not load file into system memory.");
     }
 
+    timer = SDL_GetTicks();
  
     while(run) {
 
@@ -139,8 +148,36 @@ int main(int argc, char* argv[]){
             exit(1);
         }
 
+   if(SDL_GetTicks() - timer > (1 / FPS) * 1000){
+      timer = SDL_GetTicks();
+   
+    if(c-> pc == 0x0aea){
+      printf("");
+    }
 
-    
+    //if(c-> pc == 0x0af3){
+      if(c-> instructions == 42140){
+      
+      cpu_dump(c);
+      printf("\n%d", c->instructions);
+      //exit(0);
+      if(c->pc == 0x0AE1 && c->instructions > 42000){
+          
+      }
+      
+    }
+   if(c->int_enable == 1){
+          if(!int_flag){
+              do_interrupt(c, 1);
+              //GenerateInterrupt(c, 1);
+              int_flag = 1;
+          } else {
+              do_interrupt(c, 2);
+              //GenerateInterrupt(c, 2);
+              int_flag = 0;
+          }
+          
+      }
     uint8_t *opcode = &c->memory[c->pc];
 
     if (*opcode == 0xdb) //machine specific handling for IN    
@@ -157,23 +194,13 @@ int main(int argc, char* argv[]){
     }    
     else {
         //emulate_cycle(c);
+        
         Emulate8080Op(c);
     }  
-
-      if(c->int_enable){
-          if(!int_flag){
-              do_interrupt(c, 1);
-              int_flag = 1;
-          } else {
-              do_interrupt(c, 2);
-              int_flag = 0;
-          }
-          
-      }
       
-      sdl_draw(c);      
-      c->instructions++;
-
+      sdl_draw(c);  
+      //c->instructions++;
+    }
       run = process_keypress(&event);
     }
 

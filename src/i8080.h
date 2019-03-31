@@ -32,9 +32,9 @@ typedef struct cpu {
 } cpu;
 
 //DEBUG CODE
-static void LogicFlagsA(cpu *state);
-static void ArithFlagsA(cpu *state, uint16_t res);
-//GenerateInterrupt(cpu* state, int interrupt_num);
+//static void LogicFlagsA(cpu *state);
+//static void ArithFlagsA(cpu *state, uint16_t res);
+void GenerateInterrupt(cpu* state, int interrupt_num);
 
 #define VRAM_START 0x2400
 
@@ -105,4 +105,4 @@ void opIN(cpu *c);
 void opRZ(cpu *c);
 void opDAA(cpu *c);
 
-static void Push(cpu* state, uint8_t high, uint8_t low);
+//static void Push(cpu* state, uint8_t high, uint8_t low);
