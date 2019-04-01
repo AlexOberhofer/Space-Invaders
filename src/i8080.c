@@ -715,7 +715,7 @@ static void ArithFlagsA(cpu *state, uint16_t res)
 int Emulate8080Op(cpu* state)
 {
 
-	//for(int i = 0; i <150; i++ ){
+	for(int i = 0; i <150; i++ ){
 
 
 	unsigned char *opcode = &state->memory[state->pc];
@@ -1632,7 +1632,7 @@ int Emulate8080Op(cpu* state)
         }
 			break;
 			state->instructions++;
-	//}
+	}
 	}
 
 #if PRINTOPS

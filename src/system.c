@@ -75,9 +75,18 @@ void sdl_draw(cpu *c){
                 int res = c->memory[i] & 1 << j;
                 
                 if(res){
-                   pix[idx] = 0xFFFFFF;
+                    if(row > 8 && row < 48){ //RED TOP
+                        pix[idx] = 0xFF0000;
+                    } else if (row > 160 + 16 && row < 256 - 8){ // GREEN MIDDLE
+                        pix[idx] = 0x00F000;
+                    }  else if (row > 256 - 16 && columns > 16 && columns < 256 - 122){ // GREEN LOWER
+                        pix[idx] = 0x00F000;
+                    } else {
+                        pix[idx] = 0xFFFFFF; //WHITE
+                    }
+                   
                 } else {
-                   pix[idx] = 0x000000;
+                   pix[idx] = 0x000000; //BLACK
                 }
             }
             i++;
@@ -132,7 +141,7 @@ int main(int argc, char *argv[])
 
     SDL_Event event;
 
-    //emu_init();
+    emu_init();
 
     cpu *c = init_8080();
 
@@ -166,13 +175,13 @@ int main(int argc, char *argv[])
                 if (!int_flag)
                 {
                     do_interrupt(c, 1);
-                    do_interrupt(c2, 1);
+                    //do_interrupt(c2, 1);
                     int_flag = 1;
                 }
                 else
                 {
                     do_interrupt(c, 2);
-                    do_interrupt(c2, 2);
+                    //do_interrupt(c2, 2);
                     int_flag = 0;
                 }
             }
@@ -186,27 +195,28 @@ int main(int argc, char *argv[])
                 c->a = machine_in(port);
                 c->pc += 2;
                 //DEBUG
-                c2->a = machine_in(port);
-                c2->pc += 2;
+                //c2->a = machine_in(port);
+                //c2->pc += 2;
             }
             else if (*opcode == 0xd3) //OUT
             {
                 uint8_t port = opcode[1];
                 machine_out(port, c->a);
                 c->pc += 2;
-                machine_out(port, c2->a);
-                c2->pc += 2;
+                //machine_out(port, c2->a);
+                //c2->pc += 2;
             }
             else
             {
-                emulate_cycle(c);
-                Emulate8080Op(c2);
+                Emulate8080Op(c);
+                //emulate_cycle(c);
+                //Emulate8080Op(c2);
             }
 
-            if(compare(c, c2) == 0){
-               exit(1);
-            }
-            //sdl_draw(c);
+            //if(compare(c, c2) == 0){
+             //  exit(1);
+            //}
+            sdl_draw(c);
         }
         run = process_keypress(&event);
     }
