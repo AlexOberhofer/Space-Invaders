@@ -33,6 +33,12 @@ void arithFlagA(cpu *c, uint16_t result){
 
 }
 
+void flagzsp(cpu *c, uint16_t result){
+	c->flags.z = (result == 0);
+	c->flags.s = (0x80 == (result & 0x80));
+	c->flags.p = parity(result, 8);
+}
+
 int parity(int x, int size){
       int i = 0;
       int p= 0;
@@ -96,7 +102,13 @@ void emulate_cycle(cpu *i8080){
 		  case 0x2b: opDCXH(i8080); break;
           case 0x31: opLXIsp(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x32: opSTAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
-		  case 0x35: opDCRM(i8080); break;
+		  case 0x35: opDCRM(i8080);
+		  //{
+			//uint8_t res = ReadFromHL(i8080) - 1;
+            //flagzsp(i8080, res);
+            //WriteToHL(i8080, res);
+			//}
+		   break;
           case 0x36: opMVIM(i8080, opcode[1]); break;
 		  case 0x37: opSTC(i8080); break;
           case 0x3a: opLDAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
@@ -131,10 +143,10 @@ void emulate_cycle(cpu *i8080){
 		  case 0xd0: opRNC(i8080); break;
           case 0xd1: opPOPD(i8080); break;
           case 0xd2: opJNCadr(i8080, opcode); break;
-          case 0xd3: i8080->pc--; break;
+          case 0xd3: i8080->pc++; break;
           case 0xd5: opPUSHD(i8080); break;
 		  case 0xda: opJC(i8080, opcode); break;
-		  case 0xdb: i8080->pc--; break;
+		  case 0xdb: i8080->pc++; break;
           case 0xe1: opPOPH(i8080); break;
 		  case 0xe3: opXTHL(i8080); break;
           case 0xe5: opPUSHH(i8080); break;
@@ -390,13 +402,14 @@ void opDCXH(cpu *c){
 }
 
 void opDCRM(cpu *c){
-    uint16_t result = ((c->h << 8) | c->l) - 1;
+    uint16_t hl = c->memory[((c->h << 8) | c->l)];
+	uint8_t result = hl - 1;	
     c->flags.z = (result == 0);
     c->flags.s = (0x80 == (result & 0x80));
     c->flags.p = parity(result, 8);
+	//flagzsp(c, result);
 	uint16_t offset = (c->h << 8)| c->l;
 	c->memory[offset] = result;
-
 }
 
 void opRET(cpu *c){

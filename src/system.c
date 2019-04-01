@@ -177,6 +177,8 @@ int main(int argc, char *argv[])
                 }
             }
             uint8_t *opcode = &c->memory[c->pc];
+            uint8_t *opcode2 = &c2->memory[c2->pc];
+
 
             if (*opcode == 0xdb) //machine specific handling for IN
             {

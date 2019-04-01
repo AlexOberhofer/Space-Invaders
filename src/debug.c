@@ -60,6 +60,30 @@ int compare(cpu *c1, cpu* c2){
         cpu_dump(c1);
         cpu_dump(c2);
         return 0;
+    }  else if (c1->flags.z != c2->flags.z){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->flags.s != c2->flags.s){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->flags.p != c2->flags.p){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->flags.cy != c2->flags.cy){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->flags.ac != c2->flags.ac){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->flags.pad != c2->flags.pad){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
     }
     return 1;
 }
