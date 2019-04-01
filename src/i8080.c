@@ -52,21 +52,21 @@ void do_interrupt(cpu *c, uint16_t int_num){
 		//Push(c, (c->pc & 0xFF00) >> 8, (c->pc & 0xff));
 		c->pc = 8 * int_num;
         c->int_enable = 0;
-        
+
 }
 
 
 void emulate_cycle(cpu *i8080){
 
-	for(int i = 0; i <1000; i++ ){
+	//for(int i = 0; i <250; i++ ){
 
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
       disassemble(i8080->memory, i8080->pc);
 
 
-	  cpu_dump(i8080);
-      
+	  //cpu_dump(i8080);
+
       printf("\n");
 
       //NOTE: ALL OPCODES ARE AT LEAST 1 BYTE
@@ -93,23 +93,31 @@ void emulate_cycle(cpu *i8080){
           case 0x26: opMVIH(i8080, opcode[1]); break;
 		  case 0x27: opDAA(i8080); break;
           case 0x29: opDADH(i8080); break;
+		  case 0x2b: opDCXH(i8080); break;
           case 0x31: opLXIsp(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x32: opSTAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
 		  case 0x35: opDCRM(i8080); break;
           case 0x36: opMVIM(i8080, opcode[1]); break;
+		  case 0x37: opSTC(i8080); break;
           case 0x3a: opLDAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x3e: opMVIA(i8080, opcode[1]); break;
+		  case 0x46: opMOVBM(i8080, (i8080->h << 8 | (i8080->l))); break;
+		  case 0x4f: opMOVCA(i8080); break;
           case 0x56: opMOVDM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x5e: opMOVEM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x66: opMOVHM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x6f: opMOVLA(i8080); break;
           case 0x77: opMOVMA(i8080, (i8080->h << 8 | (i8080->l))); break;
+		  case 0x79: opMOVAC(i8080); break;
           case 0x7a: opMOVAD(i8080); break;
           case 0x7b: opMOVAE(i8080); break;
           case 0x7c: opMOVAH(i8080); break;
           case 0x7e: opMOVAM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0xa7: opANAA(i8080); break;
-          case 0xaf: opXRA(i8080); break;
+		  case 0xa8: opXRAB(i8080); break;
+          case 0xaf: opXRAA(i8080); break;
+		  case 0xb0: opORAB(i8080); break;
+		  case 0xc0: opRNZ(i8080); break;
           case 0xc1: opPOPB(i8080); break;
           case 0xc2: opJMPNZ(i8080, opcode); break;
           case 0xc3: opJMPadr(i8080, opcode); break;
@@ -118,7 +126,9 @@ void emulate_cycle(cpu *i8080){
 		  case 0xc8: opRZ(i8080); break;
           case 0xc9: opRET(i8080); break;
           case 0xca: opJZadr(i8080, opcode); break;
+		  case 0xcc: opCZ(i8080, opcode); break;
           case 0xcd: opCALLAdr(i8080, i8080->pc+2, opcode); break;
+		  case 0xd0: opRNC(i8080); break;
           case 0xd1: opPOPD(i8080); break;
           case 0xd2: opJNCadr(i8080, opcode); break;
           case 0xd3: i8080->pc--; break;
@@ -126,8 +136,10 @@ void emulate_cycle(cpu *i8080){
 		  case 0xda: opJC(i8080, opcode); break;
 		  case 0xdb: i8080->pc--; break;
           case 0xe1: opPOPH(i8080); break;
+		  case 0xe3: opXTHL(i8080); break;
           case 0xe5: opPUSHH(i8080); break;
           case 0xe6: opANIA(i8080, opcode[1]); break;
+		  case 0xe9: opPCHL(i8080); break;
           case 0xeb: opXCHG(i8080); break;
           case 0xf1: opPOPPSW(i8080); break;
           case 0xf5: opPUSHPSW(i8080); break;
@@ -136,9 +148,10 @@ void emulate_cycle(cpu *i8080){
 
           default: fail(i8080);
 
-      }
-	  i8080->instructions++;
+      //}
+	  
 	}
+	i8080->instructions++;
 }
 
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval) {
@@ -193,7 +206,7 @@ void opJNCadr(cpu *c, uint8_t *opcode){
     } else {
         c-> pc += 2;
     }
-} 
+}
 
 void opLXIsp(cpu* c, uint16_t stack_val){
     c->sp = stack_val;
@@ -245,6 +258,9 @@ void opADIA(cpu *c, uint8_t val){
 void opMOVDM(cpu *c, uint16_t offset){
     c->d = c->memory[offset];
 }
+void opMOVBM(cpu *c, uint16_t offset){
+	c->b = c->memory[offset];
+}
 
 void opMOVEM(cpu *c, uint16_t offset){
     c->e = c->memory[offset];
@@ -274,8 +290,16 @@ void opMOVAD(cpu *c){
     c->a = c->d;
 }
 
+void opMOVAC(cpu *c){
+	c->a = c->c;
+}
+
 void opMOVAE(cpu *c){
     c->a = c->e;
+}
+
+void opMOVCA(cpu *c){
+	c->c = c-> a;
 }
 
 void opDADB(cpu *c){
@@ -309,6 +333,18 @@ void opCALLAdr(cpu *c, uint16_t return_adr, uint8_t *opcode){
     c->memory[c->sp-2] = (return_adr & 0xff);
     c->sp = c->sp - 2;
     c->pc = (opcode[2] << 8) | opcode[1];
+}
+
+void opCZ(cpu *c, uint8_t *opcode){
+	if(c->flags.z == 1){
+		uint16_t ret = c->pc+2;
+		c->memory[c-> sp-1] = (ret >> 8) & 0xff;
+		c->memory[c-> sp-2] = (ret & 0xff);
+		c->sp = c->sp - 2;
+		c->pc = (opcode[2] << 8) | opcode[1];
+	} else {
+		c-> pc += 2;
+	}
 }
 
 void opLDAXD(cpu *c) {
@@ -346,6 +382,13 @@ void opDCRC(cpu *c){
     c->c = result;
 }
 
+void opDCXH(cpu *c){
+	c->l -= 1;
+	if(c->l == 0xff){
+		c->h -= 1;
+	}
+}
+
 void opDCRM(cpu *c){
     uint16_t result = ((c->h << 8) | c->l) - 1;
     c->flags.z = (result == 0);
@@ -359,6 +402,20 @@ void opDCRM(cpu *c){
 void opRET(cpu *c){
     c->pc = c->memory[c->sp] | (c->memory[c->sp+1] << 8);
     c->sp += 2;
+}
+
+void opRNZ(cpu *c){
+	if(c->flags.z == 0){
+		c->pc = c->memory[c->sp] | (c->memory[c->sp +1] << 8);
+		c->sp += 2;
+	}
+}
+
+void opRNC(cpu* c){
+	if(c->flags.cy == 0){
+		c->pc = c->memory[c->sp] | (c->memory[c->sp +1] << 8);
+		c->sp += 2;
+	}
 }
 
 void opCPIA(cpu *c, uint8_t value){
@@ -455,9 +512,14 @@ void opSTAadr(cpu *c, uint16_t offset){
     c->pc += 2;
 }
 
-void opXRA(cpu *c){
+void opXRAA(cpu *c){
     c->a = c->a ^ c->a;
     logicFlagA(c);
+}
+
+void opXRAB(cpu *c){
+	c->a = c->a ^ c->b;
+	logicFlagA(c);
 }
 
 void opEL(cpu *c){
@@ -476,7 +538,7 @@ void opIN(cpu *c){
 void opRZ(cpu *c){
 	if(c->flags.z){
 		c->pc = c->memory[c->sp] | (c->memory[c->sp + 1] << 8);
-		c->pc += 2;
+		c->sp += 2;
 	}
 }
 
@@ -490,6 +552,28 @@ void opDAA(cpu *c){
 		c->a = result & 0xff;
 		arithFlagA(c, result);
 	}
+}
+
+void opORAB(cpu *c){
+	c->a = c->a | c->b; 
+    logicFlagA(c);
+}
+
+void opXTHL(cpu *c){
+	uint8_t hval = c->h;
+	uint8_t lval = c->l;
+	c->l = c->memory[c->sp];
+	c->h = c->memory[c->sp + 1];
+	c->memory[c->sp] = lval;
+	c->memory[c->sp+1] = hval;
+}
+
+void opPCHL(cpu* c){
+	c->pc = (c->h << 8) | c->l;
+}
+
+void opSTC(cpu *c){
+	c->flags.cy = 1;
 }
 
 /**
@@ -512,7 +596,7 @@ static void WriteMem(cpu* state, uint16_t address, uint8_t value)
         //       printf("Writing out of Space Invaders RAM not allowed %x\n", address);
         return;
     }
-    
+
     state->memory[address] = value;
 }
 
@@ -532,7 +616,7 @@ static void Push(cpu* state, uint8_t high, uint8_t low)
 {
     WriteMem(state, state->sp-1, high);
     WriteMem(state, state->sp-2, low);
-    state->sp = state->sp - 2;    
+    state->sp = state->sp - 2;
     //    printf ("%04x %04x\n", state->pc, state->sp);
 }
 
@@ -540,7 +624,7 @@ static void Pop(cpu* state, uint8_t *high, uint8_t *low)
 {
     *low = state->memory[state->sp];
     *high = state->memory[state->sp+1];
-    state->sp += 2;    
+    state->sp += 2;
     //    printf ("%04x %04x pop\n", state->pc, state->sp);
 }
 
@@ -548,7 +632,7 @@ static void FlagsZSP(cpu *state, uint8_t value)
 {
     state->flags.z = (value == 0);
     state->flags.s = (0x80 == (value & 0x80));
-    state->flags.p = parity(value, 8);    
+    state->flags.p = parity(value, 8);
 }
 
 static void LogicFlagsA(cpu *state)
@@ -570,20 +654,20 @@ static void ArithFlagsA(cpu *state, uint16_t res)
 int Emulate8080Op(cpu* state)
 {
 
-	for(int i = 0; i <1000; i++ ){
+	//for(int i = 0; i <150; i++ ){
 
-	
+
 	unsigned char *opcode = &state->memory[state->pc];
 
-	printf("%d ", state->instructions);
-	disassemble(state->memory, state->pc);
-    
+	//printf("%d ", state->instructions);
+	//disassemble(state->memory, state->pc);
+
 #if PRINTOPS
     Disassemble8080Op(state->memory, state->pc);
 #endif
 
-	state->pc+=1;    
-    
+	state->pc+=1;
+
 	switch (*opcode)
 	{
 		case 0x00: break;	//NOP
@@ -606,7 +690,7 @@ int Emulate8080Op(cpu* state)
 		case 0x04: 							//INR	B
             state->b += 1;
             FlagsZSP(state,state->b);
-			break;		
+			break;
 		case 0x05: 							//DCR    B
 			state->b -= 1;
             FlagsZSP(state,state->b);
@@ -639,7 +723,7 @@ int Emulate8080Op(cpu* state)
 			state->a = state->memory[offset];
         }
 			break;
-		case 0x0b:							//DCX B 
+		case 0x0b:							//DCX B
 			state->c -= 1;
 			if (state->c==0xff)
 				state->b-=1;
@@ -647,8 +731,8 @@ int Emulate8080Op(cpu* state)
 		case 0x0c:                          //INR C
             state->c += 1;
             FlagsZSP(state,state->c);
-			break;		
-            
+			break;
+
 		case 0x0d: 							//DCR C
             state->c -= 1;
             FlagsZSP(state,state->c);
@@ -664,7 +748,7 @@ int Emulate8080Op(cpu* state)
             state->flags.cy = (1 == (x&1));
         }
 			break;
-			
+
 		case 0x10: UnimplementedInstruction(state); break;
 		case 0x11: 							//LXI	D,word
 			state->e = opcode[1];
@@ -681,11 +765,11 @@ int Emulate8080Op(cpu* state)
 			state->e++;
 			if (state->e == 0)
 				state->d++;
-			break;		
+			break;
 		case 0x14: 							//INR D
             state->d += 1;
             FlagsZSP(state,state->d);
-			break;		
+			break;
 		case 0x15: 							//DCR    D
             state->d -= 1;
             FlagsZSP(state,state->d);
@@ -700,7 +784,7 @@ int Emulate8080Op(cpu* state)
             state->a = state->flags.cy  | (x << 1);
             state->flags.cy = (0x80 == (x&0x80));
         }
-			break;			
+			break;
 		case 0x18: UnimplementedInstruction(state); break;
 		case 0x19: 							//DAD    D
         {
@@ -726,8 +810,8 @@ int Emulate8080Op(cpu* state)
 		case 0x1c:							//INR E
             state->e += 1;
             FlagsZSP(state,state->e);
-			break;		
-            
+			break;
+
 		case 0x1d: 							//DCR    E
             state->e -= 1;
             FlagsZSP(state,state->e);
@@ -742,7 +826,7 @@ int Emulate8080Op(cpu* state)
             state->a = (state->flags.cy << 7) | (x >> 1);
             state->flags.cy = (1 == (x&1));
         }
-			break;			
+			break;
 		case 0x20: UnimplementedInstruction(state); break;
 		case 0x21: 							//LXI	H,word
 			state->l = opcode[1];
@@ -761,11 +845,11 @@ int Emulate8080Op(cpu* state)
 			state->l++;
 			if (state->l == 0)
 				state->h++;
-			break;		
-		case 0x24:							//INR	H 
+			break;
+		case 0x24:							//INR	H
             state->h += 1;
             FlagsZSP(state,state->h);
-			break;		
+			break;
 		case 0x25: 							//DCR    H
             state->h -= 1;
             FlagsZSP(state,state->h);
@@ -774,7 +858,7 @@ int Emulate8080Op(cpu* state)
 			state->h = opcode[1];
 			state->pc++;
 			break;
-		case 0x27: 
+		case 0x27:
             if ((state->a &0xf) > 9)
                 state->a += 6;
             if ((state->a&0xf0) > 0x90)
@@ -806,11 +890,11 @@ int Emulate8080Op(cpu* state)
 			state->l -= 1;
 			if (state->l==0xff)
 				state->h-=1;
-			break;		
+			break;
 		case 0x2c:								//INR L
             state->l += 1;
             FlagsZSP(state,state->l);
-			break;		
+			break;
 		case 0x2d: 							//DCR    L
             state->l -= 1;
             FlagsZSP(state,state->l);
@@ -820,7 +904,7 @@ int Emulate8080Op(cpu* state)
 			state->pc++;
 			break;
 		case 0x2f:
-			state->a = ~state->a;			//CMA 
+			state->a = ~state->a;			//CMA
 			break;
 		case 0x30: UnimplementedInstruction(state); break;
 		case 0x31: 							//LXI	SP,word
@@ -836,23 +920,23 @@ int Emulate8080Op(cpu* state)
 			break;
 		case 0x33: 							//INX    SP
 			state->sp++;
-			break;		
+			break;
 		case 0x34: 							//INR	M
         {
 			uint8_t res = ReadFromHL(state) + 1;
             FlagsZSP(state, res);
             WriteToHL(state, res);
         }
-			break;			
+			break;
 		case 0x35: 							//DCR    M
         {
 			uint8_t res = ReadFromHL(state) - 1;
             FlagsZSP(state, res);
             WriteToHL(state, res);
         }
-			break;			
+			break;
 		case 0x36: 							//MVI	M,byte
-        {					
+        {
             WriteToHL(state, opcode[1]);
 			state->pc++;
         }
@@ -881,7 +965,7 @@ int Emulate8080Op(cpu* state)
 		case 0x3c: 							//INR A
             state->a += 1;
             FlagsZSP(state,state->a);
-			break;		
+			break;
 		case 0x3d:							//DCR A
             state->a -= 1;
             FlagsZSP(state,state->a);
@@ -891,7 +975,7 @@ int Emulate8080Op(cpu* state)
 			state->pc++;
 			break;
 		case 0x3f: state->flags.cy = 0; break;
-			
+
 		case 0x40: state->b = state->b; break;
 		case 0x41: state->b = state->c; break;
 		case 0x42: state->b = state->d; break;
@@ -900,7 +984,7 @@ int Emulate8080Op(cpu* state)
 		case 0x45: state->b = state->l; break;
 		case 0x46: state->b = ReadFromHL(state); break;
 		case 0x47: state->b = state->a; break;
-            
+
 		case 0x48: state->c = state->b; break;
 		case 0x49: state->c = state->c; break;
 		case 0x4a: state->c = state->d; break;
@@ -909,7 +993,7 @@ int Emulate8080Op(cpu* state)
 		case 0x4d: state->c = state->l; break;
 		case 0x4e: state->c = ReadFromHL(state); break;
 		case 0x4f: state->c = state->a; break;
-			
+
 		case 0x50: state->d = state->b; break;
 		case 0x51: state->d = state->c; break;
 		case 0x52: state->d = state->d; break;
@@ -918,7 +1002,7 @@ int Emulate8080Op(cpu* state)
 		case 0x55: state->d = state->l; break;
 		case 0x56: state->d = ReadFromHL(state); break;
 		case 0x57: state->d = state->a; break;
-            
+
 		case 0x58: state->e = state->b; break;
 		case 0x59: state->e = state->c; break;
 		case 0x5a: state->e = state->d; break;
@@ -927,7 +1011,7 @@ int Emulate8080Op(cpu* state)
 		case 0x5d: state->e = state->l; break;
 		case 0x5e: state->e = ReadFromHL(state); break;
 		case 0x5f: state->e = state->a; break;
-            
+
 		case 0x60: state->h = state->b; break;
 		case 0x61: state->h = state->c; break;
 		case 0x62: state->h = state->d; break;
@@ -936,7 +1020,7 @@ int Emulate8080Op(cpu* state)
 		case 0x65: state->h = state->l; break;
 		case 0x66: state->h = ReadFromHL(state); break;
 		case 0x67: state->h = state->a; break;
-            
+
 		case 0x68: state->l = state->b; break;
 		case 0x69: state->l = state->c; break;
 		case 0x6a: state->l = state->d; break;
@@ -945,7 +1029,7 @@ int Emulate8080Op(cpu* state)
 		case 0x6d: state->l = state->l; break;
 		case 0x6e: state->l = ReadFromHL(state); break;
 		case 0x6f: state->l = state->a; break;
-            
+
 		case 0x70: WriteToHL(state, state->b); break;		//MOV    M,B
 		case 0x71: WriteToHL(state, state->c); break;		//MOV    M,C
 		case 0x72: WriteToHL(state, state->d); break;		//MOV    M,D
@@ -954,7 +1038,7 @@ int Emulate8080Op(cpu* state)
 		case 0x75: WriteToHL(state, state->l); break;		//MOV    M,L
 		case 0x76:  break;                                  //HLT
 		case 0x77: WriteToHL(state, state->a); break;		//MOV    M,A
-            
+
 		case 0x78: state->a  = state->b; break;
 		case 0x79: state->a  = state->c; break;
 		case 0x7a: state->a  = state->d;  break;
@@ -963,7 +1047,7 @@ int Emulate8080Op(cpu* state)
 		case 0x7d: state->a  = state->l;  break;
 		case 0x7e: state->a = ReadFromHL(state); break;
 		case 0x7f: break;
-            
+
 		case 0x80:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->b; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADD B
 		case 0x81:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->c; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADD C
 		case 0x82:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->d; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADD D
@@ -971,13 +1055,13 @@ int Emulate8080Op(cpu* state)
 		case 0x84:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->h; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADD H
 		case 0x85:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->l; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADD L
 		case 0x86:  					//ADD M
-        { 
-            uint16_t res = (uint16_t) state->a + (uint16_t) ReadFromHL(state); 
-            ArithFlagsA(state, res); 
-            state->a=(res&0xff); 
-        } break;  
+        {
+            uint16_t res = (uint16_t) state->a + (uint16_t) ReadFromHL(state);
+            ArithFlagsA(state, res);
+            state->a=(res&0xff);
+        } break;
 		case 0x87:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->a; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC A
-            
+
 		case 0x88:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->b + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC B
 		case 0x89:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->c + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC C
 		case 0x8a:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->d + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC D
@@ -985,14 +1069,14 @@ int Emulate8080Op(cpu* state)
 		case 0x8c:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->h + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC H
 		case 0x8d:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->l + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC L
 		case 0x8e: 					//ADC M
-        { 
-            uint16_t res = (uint16_t) state->a + (uint16_t) ReadFromHL(state) + state->flags.cy; 
-            ArithFlagsA(state, res); 
-            state->a=(res&0xff); 
-        } break;  
+        {
+            uint16_t res = (uint16_t) state->a + (uint16_t) ReadFromHL(state) + state->flags.cy;
+            ArithFlagsA(state, res);
+            state->a=(res&0xff);
+        } break;
 		case 0x8f:  { uint16_t res = (uint16_t) state->a + (uint16_t) state->a + state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //ADC A
-            
-            
+
+
 		case 0x90:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->b; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB B
 		case 0x91:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->c; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB C
 		case 0x92:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->d; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB D
@@ -1000,13 +1084,13 @@ int Emulate8080Op(cpu* state)
 		case 0x94:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->h; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB H
 		case 0x95:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->l; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB L
 		case 0x96:  					//SUB M
-        { 
-            uint16_t res = (uint16_t) state->a - (uint16_t) ReadFromHL(state); 
-            ArithFlagsA(state, res); 
-            state->a=(res&0xff); 
-        } break;  
+        {
+            uint16_t res = (uint16_t) state->a - (uint16_t) ReadFromHL(state);
+            ArithFlagsA(state, res);
+            state->a=(res&0xff);
+        } break;
 		case 0x97:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->a; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SUB A
-            
+
 		case 0x98:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->b - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB B
 		case 0x99:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->c - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB C
 		case 0x9a:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->d - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB D
@@ -1014,13 +1098,13 @@ int Emulate8080Op(cpu* state)
 		case 0x9c:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->h - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB H
 		case 0x9d:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->l - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB L
 		case 0x9e: 					//SBB M
-        { 
-            uint16_t res = (uint16_t) state->a - (uint16_t) ReadFromHL(state) - state->flags.cy; 
-            ArithFlagsA(state, res); 
-            state->a=(res&0xff); 
-        } break;  
+        {
+            uint16_t res = (uint16_t) state->a - (uint16_t) ReadFromHL(state) - state->flags.cy;
+            ArithFlagsA(state, res);
+            state->a=(res&0xff);
+        } break;
 		case 0x9f:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->a - state->flags.cy; ArithFlagsA(state, res); state->a=(res&0xff); } break;  //SBB A
-            
+
 		case 0xa0: state->a = state->a & state->b; LogicFlagsA(state);	break;
 		case 0xa1: state->a = state->a & state->c; LogicFlagsA(state);	break;
 		case 0xa2: state->a = state->a & state->d; LogicFlagsA(state);	break;
@@ -1029,7 +1113,7 @@ int Emulate8080Op(cpu* state)
 		case 0xa5: state->a = state->a & state->l; LogicFlagsA(state);	break;
 		case 0xa6: state->a = state->a & ReadFromHL(state); LogicFlagsA(state);	break;
 		case 0xa7: state->a = state->a & state->a; LogicFlagsA(state);	break;
-            
+
 		case 0xa8: state->a = state->a ^ state->b; LogicFlagsA(state);	break;
 		case 0xa9: state->a = state->a ^ state->c; LogicFlagsA(state);	break;
 		case 0xaa: state->a = state->a ^ state->d; LogicFlagsA(state);	break;
@@ -1038,7 +1122,7 @@ int Emulate8080Op(cpu* state)
 		case 0xad: state->a = state->a ^ state->l; LogicFlagsA(state);	break;
 		case 0xae: state->a = state->a ^ ReadFromHL(state); LogicFlagsA(state);	break;
 		case 0xaf: state->a = state->a ^ state->a; LogicFlagsA(state);	break;
-            
+
 		case 0xb0: state->a = state->a | state->b; LogicFlagsA(state);	break;
 		case 0xb1: state->a = state->a | state->c; LogicFlagsA(state);	break;
 		case 0xb2: state->a = state->a | state->d; LogicFlagsA(state);	break;
@@ -1047,7 +1131,7 @@ int Emulate8080Op(cpu* state)
 		case 0xb5: state->a = state->a | state->l; LogicFlagsA(state);	break;
 		case 0xb6: state->a = state->a | ReadFromHL(state); LogicFlagsA(state);	break;
 		case 0xb7: state->a = state->a | state->a; LogicFlagsA(state);	break;
-            
+
 		case 0xb8:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->b; ArithFlagsA(state, res); } break;  //CMP B
 		case 0xb9:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->c; ArithFlagsA(state, res); } break;  //CMP C
 		case 0xba:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->d; ArithFlagsA(state, res); } break;  //CMP D
@@ -1056,7 +1140,7 @@ int Emulate8080Op(cpu* state)
 		case 0xbd:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->l; ArithFlagsA(state, res); } break;  //CMP L
 		case 0xbe:  { uint16_t res = (uint16_t) state->a - (uint16_t) ReadFromHL(state); ArithFlagsA(state, res); } break;  //CMP L
 		case 0xbf:  { uint16_t res = (uint16_t) state->a - (uint16_t) state->a; ArithFlagsA(state, res); } break;  //CMP A
-            
+
 		case 0xc0:						//RNZ
 			if (state->flags.z == 0)
 			{
@@ -1064,7 +1148,7 @@ int Emulate8080Op(cpu* state)
 				state->sp += 2;
 			}
 			break;
-            
+
 		case 0xc1: 						//POP    B
             Pop(state, &state->b, &state->c);
 			break;
@@ -1089,7 +1173,7 @@ int Emulate8080Op(cpu* state)
 			else
 				state->pc += 2;
 			break;
-            
+
 		case 0xc5: 						//PUSH   B
             Push(state, state->b, state->c);
 			break;
@@ -1150,7 +1234,7 @@ int Emulate8080Op(cpu* state)
 			state->pc = (opcode[2] << 8) | opcode[1];
         }
  			break;
-		case 0xce:					//ACI  byte 
+		case 0xce:					//ACI  byte
         {
 			uint16_t x = state->a + opcode[1] + state->flags.cy;
             FlagsZSP(state, x&0xff);
@@ -1168,7 +1252,7 @@ int Emulate8080Op(cpu* state)
 			state->pc = 0x0008;
         }
 			break;
-            
+
 		case 0xd0:					//RNC
 			if (state->flags.cy == 0)
 			{
@@ -1234,7 +1318,7 @@ int Emulate8080Op(cpu* state)
 				state->pc = (opcode[2] << 8) | opcode[1];
 			else
 				state->pc += 2;
-			break;		
+			break;
 		case 0xdb: 					//IN d8
 			state->pc++;
 			break;
@@ -1269,7 +1353,7 @@ int Emulate8080Op(cpu* state)
 			state->pc = 0x18;
         }
 			break;
-            
+
 		case 0xe0:					//RPO
 			if (state->flags.p == 0)
 			{
@@ -1286,12 +1370,12 @@ int Emulate8080Op(cpu* state)
 			else
 				state->pc += 2;
 			break;
-		case 0xe3:						//XTHL 
+		case 0xe3:						//XTHL
         {
             uint8_t h = state->h;
             uint8_t l = state->l;
             state->l = state->memory[state->sp];
-            state->h = state->memory[state->sp+1]; 
+            state->h = state->memory[state->sp+1];
             WriteMem(state, state->sp, l );
             WriteMem(state, state->sp+1, h );
         }
@@ -1342,7 +1426,7 @@ int Emulate8080Op(cpu* state)
 				state->pc = (opcode[2] << 8) | opcode[1];
 			else
 				state->pc += 2;
-			break;		
+			break;
 		case 0xeb: 					//XCHG
         {
             uint8_t save1 = state->d;
@@ -1384,18 +1468,18 @@ int Emulate8080Op(cpu* state)
 			state->pc = 0x28;
         }
 			break;
-            
+
 		case 0xf0: 					//RP
 			if (state->flags.s == 0)
 			{
 				state->pc = state->memory[state->sp] | (state->memory[state->sp+1]<<8);
 				state->sp += 2;
 			}
-			break;		
+			break;
 		case 0xf1: 					//POP PSW
             Pop(state, &state->a,(unsigned char*) &state->flags);
 			break;
-		case 0xf2: 
+		case 0xf2:
 			if (state->flags.s == 0)
 				state->pc = (opcode[2] << 8) | opcode[1];
 			else
@@ -1414,11 +1498,11 @@ int Emulate8080Op(cpu* state)
 			else
 				state->pc += 2;
 			break;
-            
+
 		case 0xf5: 						//PUSH   PSW
             Push(state, state->a, *(unsigned char*)&state->flags);
 			break;
-            
+
 		case 0xf6: 						//ORI    byte
         {
 			//AC set if lower nibble of h was zero prior to dec
@@ -1467,7 +1551,7 @@ int Emulate8080Op(cpu* state)
 			else
 				state->pc += 2;
 			break;
-            
+
 		case 0xfd: UnimplementedInstruction(state); break;
 		case 0xfe: 						//CPI  byte
         {
@@ -1486,7 +1570,8 @@ int Emulate8080Op(cpu* state)
 			state->pc = 0x38;
         }
 			break;
-	}
+			state->instructions++;
+	//}
 	}
 
 #if PRINTOPS

@@ -22,21 +22,63 @@ void memory_dump(cpu *c){
 
 }
 
+int compare(cpu *c1, cpu* c2){
+    if(c1->pc != c2->pc){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    } else if (c1->sp != c2->sp){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    } else if (c1->a != c2->a){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->b != c2->b){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->c != c2->c){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->d != c2->d){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }
+     else if (c1->e != c2->e){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    } else if (c1->h != c2->h){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }  else if (c1->l != c2->l){
+        cpu_dump(c1);
+        cpu_dump(c2);
+        return 0;
+    }
+    return 1;
+}
+
 void cpu_dump(cpu *c){
 
     printf("Instruction Count: %d \n\n", c->instructions);
 
-    //printf("\nRegisters: \n");
-    //printf("A: %02x\n", c->a);
-    //printf("B: %02x  ", c->b);
-    //printf("C: %02x\n", c->c);
-    //printf("D: %02x  ", c->d);
-    //printf("E: %02x\n", c->e);
-    //printf("H: %02x  ", c->h);
-    //printf("L: %02x\n", c->l);
+    printf("\nRegisters: \n");
+    printf("A: %02x\n", c->a);
+    printf("B: %02x  ", c->b);
+    printf("C: %02x\n", c->c);
+    printf("D: %02x  ", c->d);
+    printf("E: %02x\n", c->e);
+    printf("H: %02x  ", c->h);
+    printf("L: %02x\n", c->l);
     printf("PC: %04x\n", c->pc);
     printf("SP: %04x\n", c->sp);
-/*
+
     printf("\nFlags:\n");
     printf("Z: %02x  ", c->flags.z);
     printf("S: %02x  ", c->flags.s);
@@ -44,7 +86,7 @@ void cpu_dump(cpu *c){
     printf("CY: %02x  ", c->flags.cy);
     printf("AC: %02x  ", c->flags.ac);
     printf("PAD: %02x\n", c->flags.pad);
-    */
+
     printf("\n");
 
 
@@ -117,6 +159,7 @@ int disassemble(unsigned char *buffer, int pc){
         case 0x27: printf("DAA"); break;
         case 0x29: printf("DAD		H"); break;
         case 0x2a: printf("LHLD		ADR $%02x%02x", opcode[2], opcode[1]); op_size = 3; break;
+        case 0x2b: printf("DCX		H"); break;
         case 0x2c: printf("INR		L"); break;
         case 0x2d: printf("DCR		L"); break;
         case 0x2e: printf("MVI		L, #%02x ", opcode[1]); op_size = 2; break;

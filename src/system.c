@@ -132,9 +132,14 @@ int main(int argc, char *argv[])
 
     SDL_Event event;
 
-    emu_init();
+    //emu_init();
 
     cpu *c = init_8080();
+
+    //DEBUG
+    cpu *c2 = init_8080();
+    load_file_to_memory("./res/invaders.rom", c2, 0x00);
+    
 
     if (load_file_to_memory("./res/invaders.rom", c, 0x00) != 0)
     {
@@ -161,11 +166,13 @@ int main(int argc, char *argv[])
                 if (!int_flag)
                 {
                     do_interrupt(c, 1);
+                    do_interrupt(c2, 1);
                     int_flag = 1;
                 }
                 else
                 {
                     do_interrupt(c, 2);
+                    do_interrupt(c2, 2);
                     int_flag = 0;
                 }
             }
@@ -176,20 +183,28 @@ int main(int argc, char *argv[])
                 uint8_t port = opcode[1];
                 c->a = machine_in(port);
                 c->pc += 2;
+                //DEBUG
+                c2->a = machine_in(port);
+                c2->pc += 2;
             }
             else if (*opcode == 0xd3) //OUT
             {
                 uint8_t port = opcode[1];
                 machine_out(port, c->a);
                 c->pc += 2;
+                machine_out(port, c2->a);
+                c2->pc += 2;
             }
             else
             {
-                //emulate_cycle(c);
-                Emulate8080Op(c);
+                emulate_cycle(c);
+                Emulate8080Op(c2);
             }
 
-            sdl_draw(c);
+            if(compare(c, c2) == 0){
+               exit(1);
+            }
+            //sdl_draw(c);
         }
         run = process_keypress(&event);
     }
