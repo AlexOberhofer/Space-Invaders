@@ -86,12 +86,14 @@ void emulate_cycle(cpu *i8080){
           case 0x01: opLXIB(i8080, opcode[2], opcode[1]); break;
           case 0x05: opDCRB(i8080); break;
           case 0x06: opMVIB(i8080, opcode[1]); break;
+		  case 0x07: break;
           case 0x09: opDADB(i8080); break;
           case 0x0d: opDCRC(i8080); break;
           case 0x0e: opMVIC(i8080, opcode[1]); break;
           case 0x0f: opRRC(i8080); break;
           case 0x11: opLXID(i8080, opcode[2], opcode[1]); break;
           case 0x13: opINXD(i8080); break;
+		  case 0x16: opMVID(i8080, opcode[1]); break;
           case 0x19: opDADD(i8080); break;
           case 0x1a: opLDAXD(i8080); break;
           case 0x21: opLXIH(i8080, opcode[2], opcode[1]); break;
@@ -99,16 +101,11 @@ void emulate_cycle(cpu *i8080){
           case 0x26: opMVIH(i8080, opcode[1]); break;
 		  case 0x27: opDAA(i8080); break;
           case 0x29: opDADH(i8080); break;
+		  case 0x2a: opLHLD(i8080, (opcode[2] << 8) | opcode[1]); break;
 		  case 0x2b: opDCXH(i8080); break;
           case 0x31: opLXIsp(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x32: opSTAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
-		  case 0x35: opDCRM(i8080);
-		  //{
-			//uint8_t res = ReadFromHL(i8080) - 1;
-            //flagzsp(i8080, res);
-            //WriteToHL(i8080, res);
-			//}
-		   break;
+		  case 0x35: opDCRM(i8080); break;
           case 0x36: opMVIM(i8080, opcode[1]); break;
 		  case 0x37: opSTC(i8080); break;
           case 0x3a: opLDAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
@@ -117,13 +114,18 @@ void emulate_cycle(cpu *i8080){
 		  case 0x4f: opMOVCA(i8080); break;
           case 0x56: opMOVDM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0x5e: opMOVEM(i8080, (i8080->h << 8 | (i8080->l))); break;
+		  case 0x5f: opMOVEA(i8080); break;
           case 0x66: opMOVHM(i8080, (i8080->h << 8 | (i8080->l))); break;
+		  case 0x67: opMOVHA(i8080); break;
           case 0x6f: opMOVLA(i8080); break;
+		  case 0x70: opRLC(i8080); break;
           case 0x77: opMOVMA(i8080, (i8080->h << 8 | (i8080->l))); break;
+		  case 0x78: opMOVAB(i8080); break;
 		  case 0x79: opMOVAC(i8080); break;
           case 0x7a: opMOVAD(i8080); break;
           case 0x7b: opMOVAE(i8080); break;
           case 0x7c: opMOVAH(i8080); break;
+		  case 0x7d: opMOVAL(i8080); break;
           case 0x7e: opMOVAM(i8080, (i8080->h << 8 | (i8080->l))); break;
           case 0xa7: opANAA(i8080); break;
 		  case 0xa8: opXRAB(i8080); break;
@@ -133,6 +135,7 @@ void emulate_cycle(cpu *i8080){
           case 0xc1: opPOPB(i8080); break;
           case 0xc2: opJMPNZ(i8080, opcode); break;
           case 0xc3: opJMPadr(i8080, opcode); break;
+		  case 0xc4: opCNZ(i8080, opcode); break;
           case 0xc5: opPUSHB(i8080); break;
           case 0xc6: opADIA(i8080, opcode[1]); break;
 		  case 0xc8: opRZ(i8080); break;
@@ -251,6 +254,11 @@ void opMVIA(cpu *c, uint8_t val){
     c->pc++;
 }
 
+void opMVID(cpu *c, uint8_t val){
+	c->d = val;
+	c->pc++;
+}
+
 void opANIA(cpu* c, uint8_t val){
     c->a = (c->a & val);
     logicFlagA(c);
@@ -314,6 +322,22 @@ void opMOVCA(cpu *c){
 	c->c = c-> a;
 }
 
+void opMOVEA(cpu *c){
+	c->e = c->a;
+}
+
+void opMOVHA(cpu *c){
+	c->h = c->a;
+}
+
+void opMOVAB(cpu *c){
+	c->a = c->b;
+}
+
+void opMOVAL(cpu *c){
+	c->a = c->l;
+}
+
 void opDADB(cpu *c){
     uint32_t hl_val = (c->h << 8) | c->l;
     uint32_t bc_val = (c->b << 8) | c->c;
@@ -349,6 +373,18 @@ void opCALLAdr(cpu *c, uint16_t return_adr, uint8_t *opcode){
 
 void opCZ(cpu *c, uint8_t *opcode){
 	if(c->flags.z == 1){
+		uint16_t ret = c->pc+2;
+		c->memory[c-> sp-1] = (ret >> 8) & 0xff;
+		c->memory[c-> sp-2] = (ret & 0xff);
+		c->sp = c->sp - 2;
+		c->pc = (opcode[2] << 8) | opcode[1];
+	} else {
+		c-> pc += 2;
+	}
+}
+
+void opCNZ(cpu *c, uint8_t *opcode){
+	if(c->flags.z == 0){
 		uint16_t ret = c->pc+2;
 		c->memory[c-> sp-1] = (ret >> 8) & 0xff;
 		c->memory[c-> sp-2] = (ret & 0xff);
@@ -587,6 +623,18 @@ void opPCHL(cpu* c){
 
 void opSTC(cpu *c){
 	c->flags.cy = 1;
+}
+
+void opRLC(cpu *c){
+	uint8_t val = c->a;
+	c->a = ((val & 0x80) >> 7) | (val << 1);
+	c->flags.cy = (0x80 == (val & 0x80));
+}
+
+void opLHLD(cpu *c, uint16_t offset){
+	c->l = c->memory[offset];
+	c->h = c->memory[offset + 1];
+	c->pc += 2;
 }
 
 /**
