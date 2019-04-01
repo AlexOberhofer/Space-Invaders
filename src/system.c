@@ -186,7 +186,6 @@ int main(int argc, char *argv[])
                 }
             }
             uint8_t *opcode = &c->memory[c->pc];
-            uint8_t *opcode2 = &c2->memory[c2->pc];
 
 
             if (*opcode == 0xdb) //machine specific handling for IN
@@ -214,7 +213,7 @@ int main(int argc, char *argv[])
             }
 
             //if(compare(c, c2) == 0){
-             //  exit(1);
+              // exit(1);
             //}
             sdl_draw(c);
         }
