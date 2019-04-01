@@ -21,6 +21,8 @@ uint8_t shift_offset;
 
 uint32_t timer = 0;
 
+static uint8_t COLOR_FLAG;
+
 
 SDL_Surface *surface;
 SDL_Window *window;
@@ -28,8 +30,9 @@ SDL_Surface *window_surface;
 SDL_Texture *texture;
 SDL_Renderer *renderer;
 
-void emu_init(){
+void display_init(){
     //TODO: call cpu init here
+    COLOR_FLAG = 1;
 
       if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
           printf("SDL_Init failed: %s\n", SDL_GetError());
@@ -75,11 +78,11 @@ void sdl_draw(cpu *c){
                 int res = c->memory[i] & 1 << j;
                 
                 if(res){
-                    if(row > 8 && row < 48){ //RED TOP
+                    if(row > 8 && row < 48 && COLOR_FLAG){ //RED TOP
                         pix[idx] = 0xFF0000;
-                    } else if (row > 160 + 16 && row < 256 - 8){ // GREEN MIDDLE
+                    } else if (row > 160 + 16 && row < 256 - 8 && COLOR_FLAG){ // GREEN MIDDLE
                         pix[idx] = 0x00F000;
-                    }  else if (row > 256 - 16 && columns > 16 && columns < 256 - 122){ // GREEN LOWER
+                    }  else if (row > 256 - 16 && columns > 16 && columns < 256 - 122 && COLOR_FLAG){ // GREEN LOWER
                         pix[idx] = 0x00F000;
                     } else {
                         pix[idx] = 0xFFFFFF; //WHITE
@@ -141,7 +144,7 @@ int main(int argc, char *argv[])
 
     SDL_Event event;
 
-    emu_init();
+    display_init();
 
     cpu *c = init_8080();
 
