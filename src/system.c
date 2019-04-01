@@ -123,7 +123,8 @@ void machine_out(uint8_t port, uint8_t value){
     }
 }
 
-int main(int argc, char* argv[]){
+int main(int argc, char *argv[])
+{
 
     int run = 1;
 
@@ -133,76 +134,65 @@ int main(int argc, char* argv[]){
 
     emu_init();
 
-    cpu* c = init_8080();
+    cpu *c = init_8080();
 
-    if(load_file_to_memory("./res/invaders.rom", c, 0x00) != 0) {
+    if (load_file_to_memory("./res/invaders.rom", c, 0x00) != 0)
+    {
         printf("Could not load file into system memory.");
     }
 
     timer = SDL_GetTicks();
- 
-    while(run) {
 
-        if(SDL_PollEvent(&event)){
-            if(event.type == SDL_QUIT)
-            exit(1);
+    while (run)
+    {
+
+        if (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+                exit(1);
         }
 
-   if(SDL_GetTicks() - timer > (1 / FPS) * 1000){
-      timer = SDL_GetTicks();
-   
-    if(c-> pc == 0x0aea){
-      printf("");
+        if (SDL_GetTicks() - timer > (1 / FPS) * 1000)
+        {
+            timer = SDL_GetTicks();
+
+            if (c->int_enable == 1)
+            {
+                if (!int_flag)
+                {
+                    do_interrupt(c, 1);
+                    int_flag = 1;
+                }
+                else
+                {
+                    do_interrupt(c, 2);
+                    int_flag = 0;
+                }
+            }
+            uint8_t *opcode = &c->memory[c->pc];
+
+            if (*opcode == 0xdb) //machine specific handling for IN
+            {
+                uint8_t port = opcode[1];
+                c->a = machine_in(port);
+                c->pc += 2;
+            }
+            else if (*opcode == 0xd3) //OUT
+            {
+                uint8_t port = opcode[1];
+                machine_out(port, c->a);
+                c->pc += 2;
+            }
+            else
+            {
+                //emulate_cycle(c);
+                Emulate8080Op(c);
+            }
+
+            sdl_draw(c);
+        }
+        run = process_keypress(&event);
     }
 
-    //if(c-> pc == 0x0af3){
-      if(c-> instructions == 42140){
-      
-      cpu_dump(c);
-      printf("\n%d", c->instructions);
-      //exit(0);
-      if(c->pc == 0x0AE1 && c->instructions > 42000){
-          
-      }
-      
-    }
-   if(c->int_enable == 1){
-          if(!int_flag){
-              do_interrupt(c, 1);
-              //GenerateInterrupt(c, 1);
-              int_flag = 1;
-          } else {
-              do_interrupt(c, 2);
-              //GenerateInterrupt(c, 2);
-              int_flag = 0;
-          }
-          
-      }
-    uint8_t *opcode = &c->memory[c->pc];
-
-    if (*opcode == 0xdb) //machine specific handling for IN    
-    {    
-        uint8_t port = opcode[1];    
-        c->a = machine_in(port);    
-        c->pc+=2;    
-    }    
-    else if (*opcode == 0xd3)  //OUT    
-    {    
-        uint8_t port = opcode[1];    
-        machine_out(port, c->a);    
-        c->pc+=2;    
-    }    
-    else {
-        //emulate_cycle(c);
-        
-        Emulate8080Op(c);
-    }  
-      
-      sdl_draw(c);  
-      //c->instructions++;
-    }
-      run = process_keypress(&event);
-    }
-
-   return 0;
+    return 0;
 }

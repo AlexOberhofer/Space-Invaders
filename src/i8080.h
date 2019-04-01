@@ -31,11 +31,6 @@ typedef struct cpu {
       int instructions;
 } cpu;
 
-//DEBUG CODE
-//static void LogicFlagsA(cpu *state);
-//static void ArithFlagsA(cpu *state, uint16_t res);
-void GenerateInterrupt(cpu* state, int interrupt_num);
-
 #define VRAM_START 0x2400
 
 void fail(cpu *i8080);
@@ -47,6 +42,7 @@ void arithFlagA(cpu *c, uint16_t result);
 int Emulate8080Op(cpu* state);
 void do_interrupt(cpu *c, uint16_t adr);
 void UnimplementedInstruction(cpu *c);
+
 //CPU OP Functions
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval);
 void opLXID(cpu* c, uint8_t dval, uint8_t eval);
@@ -104,5 +100,3 @@ void opANAA(cpu *c);
 void opIN(cpu *c);
 void opRZ(cpu *c);
 void opDAA(cpu *c);
-
-//static void Push(cpu* state, uint8_t high, uint8_t low);
