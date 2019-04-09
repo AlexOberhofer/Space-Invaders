@@ -19,6 +19,8 @@ uint8_t shift0;
 uint8_t shift1;
 uint8_t shift_offset;
 
+uint8_t input_port = 0;
+
 uint32_t timer = 0;
 
 
@@ -29,7 +31,6 @@ SDL_Texture *texture;
 SDL_Renderer *renderer;
 
 void emu_init(){
-    //TODO: call cpu init here
 
       if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
           printf("SDL_Init failed: %s\n", SDL_GetError());
@@ -44,22 +45,80 @@ void emu_init(){
 }
 
 int process_keypress(SDL_Event *e){
+    SDL_Event event = * e;
+    const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
-  const Uint8 *keys = SDL_GetKeyboardState(NULL);
-    if(keys[SDL_SCANCODE_ESCAPE])
+    if(keys[SDL_SCANCODE_ESCAPE] )
       return  0;
-    if(keys[SDL_SCANCODE_P]) {
+
+    if(keys[SDL_SCANCODE_P]) { // Pause
        while(1){
          if(SDL_PollEvent(e)){
            if(keys[SDL_SCANCODE_ESCAPE]){
              return 0;
            } else if(keys[SDL_SCANCODE_R]){
-             break;
+             return 1;
            }
          }
 
        }
+    } 
+    
+    if (keys[SDL_SCANCODE_C]){
+        if(event.type == SDL_KEYUP){
+            input_port &= ~0x1;
+            return 1;
+        } else if (event.type == SDL_KEYDOWN){
+            input_port |= 0x01;
+            return 1;
+        }
+        
     }
+
+    if(keys[SDL_SCANCODE_X]){
+        if(event.type == SDL_KEYUP){
+            input_port &= 0x04;
+            return 1;
+        } else if (event.type == SDL_KEYDOWN){
+            input_port |= 0x04;
+            return 1;
+        }
+        
+    }
+
+    if(keys[SDL_SCANCODE_A]){
+        if(event.type == SDL_KEYUP){
+            input_port &= 0x20;
+            return 1;
+        } else if (event.type == SDL_KEYDOWN){
+            input_port |= 0x20;
+            return 1;
+        }
+        
+    }
+
+    if(keys[SDL_SCANCODE_D]){
+        if(event.type == SDL_KEYUP){
+            input_port &= 0x40;
+            return 1;
+        } else if (event.type == SDL_KEYDOWN){
+            input_port |= 0x40; 
+            return 1;  
+        }
+        
+    }
+
+    if(keys[SDL_SCANCODE_S]){
+        if(event.type == SDL_KEYUP){
+            input_port &= 0x10;
+            return 1;
+        } else if (event.type == SDL_KEYDOWN){
+            input_port |= 0x10;
+            return 1;
+        }
+        
+    }
+
     return 1;
 }
 
@@ -109,7 +168,7 @@ uint8_t machine_in(uint8_t port){
         case 0:
             return 1;
         case 1:
-            return 0;
+            return input_port;
         case 3:{
             uint16_t v = (shift1 << 8) | shift0;
             return ((v >> (8 - shift_offset)) & 0xff);
@@ -185,32 +244,36 @@ int main(int argc, char *argv[])
                     int_flag = 0;
                 }
             }
-            uint8_t *opcode = &c->memory[c->pc];
+            
             uint8_t *opcode2 = &c2->memory[c2->pc];
 
 
-            if (*opcode == 0xdb) //machine specific handling for IN
-            {
-                uint8_t port = opcode[1];
-                c->a = machine_in(port);
-                c->pc += 2;
-                //DEBUG
-                //c2->a = machine_in(port);
-                //c2->pc += 2;
-            }
-            else if (*opcode == 0xd3) //OUT
-            {
-                uint8_t port = opcode[1];
-                machine_out(port, c->a);
-                c->pc += 2;
-                //machine_out(port, c2->a);
-                //c2->pc += 2;
-            }
-            else
-            {
-                Emulate8080Op(c);
-                //emulate_cycle(c);
-                //Emulate8080Op(c2);
+            for(int instrs = 0; instrs < 100; instrs++){
+                uint8_t *opcode = &c->memory[c->pc];
+
+                if (*opcode == 0xdb) //machine specific handling for IN
+                {
+                    uint8_t port = opcode[1];
+                    c->a = machine_in(port);
+                    c->pc += 2;
+                    //DEBUG
+                    //c2->a = machine_in(port);
+                    //c2->pc += 2;
+                }
+                else if (*opcode == 0xd3) //OUT
+                {
+                    uint8_t port = opcode[1];
+                    machine_out(port, c->a);
+                    c->pc += 2;
+                    //machine_out(port, c2->a);
+                    //c2->pc += 2;
+                }
+                else
+                {
+                    Emulate8080Op(c);
+                    //emulate_cycle(c);
+                    //Emulate8080Op(c2);
+                }
             }
 
             //if(compare(c, c2) == 0){
@@ -220,6 +283,11 @@ int main(int argc, char *argv[])
         }
         run = process_keypress(&event);
     }
+
+    free(c->memory);
+    free(c2->memory);
+    free(c);
+    free(c2);
 
     return 0;
 }

@@ -1,6 +1,6 @@
 # Space Invaders
 
-An Emulation of the Intel 8080 version of Space Invaders.
+An Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. This emulator is still under development.
 
 ## Building
 A makefile is provided for gnu/linux systems. This requires the SDL2 library, clang, and make to build.
@@ -29,6 +29,8 @@ This emulator requires a singular rom file "invaders.rom" to be located in the r
 ```
 $ cat invaders.h invaders.g invaders.f invaders.e > invaders.rom
 ```
+
+This project is currently a work in progress. 
 
 ## Controls
 
