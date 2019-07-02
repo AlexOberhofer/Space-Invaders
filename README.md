@@ -34,7 +34,7 @@ This project is currently a work in progress.
 
 ## Controls
 
-Current Controls implemented
+General Controls
 
 ```
 P - PAUSE GAME
@@ -47,6 +47,34 @@ R - RESUME GAME
 ```
 ESC - QUIT 
 ```
+
+```
+C - INSERT COIN
+```
+
+```
+X - START GAME
+```
+
+Gameplay Controls
+
+```
+A - LEFT 
+```
+
+```
+D - RIGHT 
+```
+
+```
+S - FIRE 
+```
+
+```
+T - TILT 
+```
+
+
 
 ## Author
 
