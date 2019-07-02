@@ -1,3 +1,22 @@
+/*******************************************************************************
+
+MIT License
+
+Copyright (c) 2018 Alex Oberhofer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+
+*******************************************************************************/
+
 #include "i8080.h"
 #include "debug.h"
 #include "memory.h"
@@ -46,13 +65,16 @@ void display_init(){
       
 }
 
+
+
 int process_keypress(SDL_Event *e){
     SDL_Event event = * e;
-    const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
-    if(keys[SDL_SCANCODE_ESCAPE] )
-      return  0;
-
+    if (event.type == SDL_QUIT){
+        exit(1);
+    }
+    
+   /*
     if(keys[SDL_SCANCODE_P]) { // Pause
        while(1){
          if(SDL_PollEvent(e)){
@@ -65,60 +87,32 @@ int process_keypress(SDL_Event *e){
 
        }
     } 
-    
-    if (keys[SDL_SCANCODE_C]){
-        if(event.type == SDL_KEYUP){
-            input_port &= ~0x1;
-            return 1;
-        } else if (event.type == SDL_KEYDOWN){
-            input_port |= 0x01;
-            return 1;
-        }
-        
-    }
+    */
 
-    if(keys[SDL_SCANCODE_X]){
-        if(event.type == SDL_KEYUP){
-            input_port &= 0x04;
-            return 1;
-        } else if (event.type == SDL_KEYDOWN){
-            input_port |= 0x04;
-            return 1;
-        }
-        
-    }
+    if(event.type == SDL_KEYDOWN){
 
-    if(keys[SDL_SCANCODE_A]){
-        if(event.type == SDL_KEYUP){
-            input_port &= 0x20;
-            return 1;
-        } else if (event.type == SDL_KEYDOWN){
-            input_port |= 0x20;
-            return 1;
-        }
-        
-    }
+        uint32_t key = event.key.keysym.scancode;
 
-    if(keys[SDL_SCANCODE_D]){
-        if(event.type == SDL_KEYUP){
-            input_port &= 0x40;
-            return 1;
-        } else if (event.type == SDL_KEYDOWN){
-            input_port |= 0x40; 
-            return 1;  
+        switch(key){
+            case SDL_SCANCODE_C: input_port |= 0x01; break;
+            case SDL_SCANCODE_X: input_port |= 0x04; break;
+            case SDL_SCANCODE_A: input_port |= 0x20; break;
+            case SDL_SCANCODE_S: input_port |= 0x10; break;
+            case SDL_SCANCODE_D: input_port |= 0x40; break;
+            case SDL_SCANCODE_ESCAPE: return 0;
         }
-        
-    }
 
-    if(keys[SDL_SCANCODE_S]){
-        if(event.type == SDL_KEYUP){
-            input_port &= 0x10;
-            return 1;
-        } else if (event.type == SDL_KEYDOWN){
-            input_port |= 0x10;
-            return 1;
-        }
+    } else if (event.type == SDL_KEYUP){
         
+        uint32_t key = event.key.keysym.scancode;
+        
+        switch(key){
+            case SDL_SCANCODE_C: input_port &= ~0x01; break;
+            case SDL_SCANCODE_X: input_port &= ~0x04; break;
+            case SDL_SCANCODE_A: input_port &= ~0x20; break;
+            case SDL_SCANCODE_S: input_port &= ~0x10; break;
+            case SDL_SCANCODE_D: input_port &= ~0x40; break;
+        }
     }
 
     return 1;
@@ -153,14 +147,11 @@ void sdl_draw(cpu *c){
             i++;
         }
     }
-    
 
     SDL_UpdateTexture(texture, NULL, pix, W * sizeof(Uint32));
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
-    //SDL_Delay(1);
-
     SDL_UpdateWindowSurface(window);
 }
 
@@ -223,10 +214,9 @@ int main(int argc, char *argv[])
 
         timer = SDL_GetTicks();
 
-	if (SDL_PollEvent(&event))
+	    if (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
-                exit(1);
+            
         }
 
         if (SDL_GetTicks() - timer > (1 / FPS) * 1000)
@@ -252,6 +242,9 @@ int main(int argc, char *argv[])
             uint8_t *opcode2 = &c2->memory[c2->pc];
 
             for(int instrs = 0; instrs < 100; instrs++){
+
+                process_keypress(&event);
+
                 uint8_t *opcode = &c->memory[c->pc];
 
                 if (*opcode == 0xdb) //machine specific handling for IN
@@ -274,6 +267,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     Emulate8080Op(c);
+                    //printf(" Input Register : %02x \n", input_port);
                     //emulate_cycle(c);
                     //Emulate8080Op(c2);
                 }
