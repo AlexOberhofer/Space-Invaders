@@ -61,9 +61,9 @@ void arithFlagA(cpu *c, uint16_t result);
 int Emulate8080Op(cpu* state);
 void do_interrupt(cpu *c, uint16_t adr);
 void UnimplementedInstruction(cpu *c);
-static void FlagsZSP(cpu *state, uint8_t value);
-static void WriteToHL(cpu* state, uint8_t value);
-static uint8_t ReadFromHL(cpu* state);
+//static void FlagsZSP(cpu *state, uint8_t value);
+//static void WriteToHL(cpu* state, uint8_t value);
+//static uint8_t ReadFromHL(cpu* state);
 
 //CPU OP Functions
 void opLXIB(cpu* c, uint8_t bval, uint8_t cval);

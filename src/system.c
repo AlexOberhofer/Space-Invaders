@@ -214,10 +214,8 @@ int main(int argc, char *argv[])
 
         timer = SDL_GetTicks();
 
-	    if (SDL_PollEvent(&event))
-        {
-            
-        }
+	    SDL_PollEvent(&event);
+
 
         if (SDL_GetTicks() - timer > (1 / FPS) * 1000)
         {
