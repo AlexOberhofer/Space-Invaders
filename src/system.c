@@ -23,7 +23,7 @@ uint8_t input_port = 0;
 
 uint32_t timer = 0;
 
-static uint8_t COLOR_FLAG;
+static uint8_t COLOR_FLAG = 1;
 
 
 SDL_Surface *surface;
@@ -216,12 +216,14 @@ int main(int argc, char *argv[])
         printf("Could not load file into system memory.");
     }
 
-    timer = SDL_GetTicks();
+    
 
     while (run)
     {
 
-        if (SDL_PollEvent(&event))
+        timer = SDL_GetTicks();
+
+	if (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
                 exit(1);
@@ -229,7 +231,7 @@ int main(int argc, char *argv[])
 
         if (SDL_GetTicks() - timer > (1 / FPS) * 1000)
         {
-            timer = SDL_GetTicks();
+            //timer = SDL_GetTicks();
 
             if (c->int_enable == 1)
             {
