@@ -70,11 +70,15 @@ void display_init(){
 int process_keypress(SDL_Event *e){
     SDL_Event event = * e;
 
+    const uint8_t *keys = SDL_GetKeyboardState(NULL);
+
+
     if (event.type == SDL_QUIT){
         exit(1);
     }
     
-   /*
+
+    //TODO: Ugly but works 
     if(keys[SDL_SCANCODE_P]) { // Pause
        while(1){
          if(SDL_PollEvent(e)){
@@ -87,7 +91,7 @@ int process_keypress(SDL_Event *e){
 
        }
     } 
-    */
+    
 
     if(event.type == SDL_KEYDOWN){
 
@@ -99,7 +103,14 @@ int process_keypress(SDL_Event *e){
             case SDL_SCANCODE_A: input_port |= 0x20; break;
             case SDL_SCANCODE_S: input_port |= 0x10; break;
             case SDL_SCANCODE_D: input_port |= 0x40; break;
-            case SDL_SCANCODE_ESCAPE: return 0;
+            case SDL_SCANCODE_ESCAPE: return 0; break;
+            case SDL_SCANCODE_Z: {
+                switch(COLOR_FLAG) {
+                    case 0: COLOR_FLAG = 1; break;
+                    case 1: COLOR_FLAG = 0; break;
+                }
+            } break;
+            case SDL_SCANCODE_T:  break; //TODO: Tilt
         }
 
     } else if (event.type == SDL_KEYUP){
@@ -112,6 +123,7 @@ int process_keypress(SDL_Event *e){
             case SDL_SCANCODE_A: input_port &= ~0x20; break;
             case SDL_SCANCODE_S: input_port &= ~0x10; break;
             case SDL_SCANCODE_D: input_port &= ~0x40; break;
+            case SDL_SCANCODE_T: break; //TODO: Tilt
         }
     }
 
@@ -237,11 +249,11 @@ int main(int argc, char *argv[])
                 }
             }
             
-            uint8_t *opcode2 = &c2->memory[c2->pc];
+            //uint8_t *opcode2 = &c2->memory[c2->pc];
 
             for(int instrs = 0; instrs < 100; instrs++){
 
-                process_keypress(&event);
+                //process_keypress(&event);
 
                 uint8_t *opcode = &c->memory[c->pc];
 

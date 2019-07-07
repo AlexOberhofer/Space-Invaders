@@ -82,16 +82,10 @@ void do_interrupt(cpu *c, uint16_t int_num){
 
 void emulate_cycle(cpu *i8080){
 
-	for(int i = 0; i <250; i++ ){
-
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
-      disassemble(i8080->memory, i8080->pc);
-
-
+      //disassemble(i8080->memory, i8080->pc);
 	  //cpu_dump(i8080);
-
-      printf("\n");
 
       //NOTE: ALL OPCODES ARE AT LEAST 1 BYTE
       // ADD ON REMAINDER OF OP SIZE WHEN INCREMENTING PC
@@ -192,7 +186,6 @@ void emulate_cycle(cpu *i8080){
 
       }
 	  
-	}
 	i8080->instructions++;
 }
 
