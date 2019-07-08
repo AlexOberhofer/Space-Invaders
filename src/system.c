@@ -39,6 +39,7 @@ uint8_t shift1;
 uint8_t shift_offset;
 
 uint8_t input_port = 0;
+uint8_t input_port_multiplayer = 0;
 
 uint32_t timer = 0;
 
@@ -110,7 +111,7 @@ int process_keypress(SDL_Event *e){
                     case 1: COLOR_FLAG = 0; break;
                 }
             } break;
-            case SDL_SCANCODE_T:  break; //TODO: Tilt
+            case SDL_SCANCODE_T: input_port_multiplayer |= 0x04; break; //TODO: Tilt
         }
 
     } else if (event.type == SDL_KEYUP){
@@ -123,7 +124,7 @@ int process_keypress(SDL_Event *e){
             case SDL_SCANCODE_A: input_port &= ~0x20; break;
             case SDL_SCANCODE_S: input_port &= ~0x10; break;
             case SDL_SCANCODE_D: input_port &= ~0x40; break;
-            case SDL_SCANCODE_T: break; //TODO: Tilt
+            case SDL_SCANCODE_T: input_port_multiplayer &= 0x04; break; //TODO: Tilt
         }
     }
 
@@ -174,6 +175,8 @@ uint8_t machine_in(uint8_t port){
             return 1;
         case 1:
             return input_port;
+        case 2: 
+            return input_port_multiplayer;
         case 3:{
             uint16_t v = (shift1 << 8) | shift0;
             return ((v >> (8 - shift_offset)) & 0xff);
