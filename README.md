@@ -1,7 +1,7 @@
 # Space Invaders
 
 <p align="center">
-  <img src="https://github.com/AlexOberhofer/Space-Invaders/raw/master/doc/attract.PNG" alt="Chip 8 Image"/>
+  <img src="https://github.com/AlexOberhofer/Space-Invaders/raw/master/doc/attract.PNG" alt="I8080"/>
 </p>
 
 An Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. This emulator is still under development.

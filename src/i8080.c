@@ -84,7 +84,7 @@ void emulate_cycle(cpu *i8080){
 
       uint8_t *opcode = &i8080->memory[i8080->pc];
 
-      //disassemble(i8080->memory, i8080->pc);
+      disassemble(i8080->memory, i8080->pc);
 	  //cpu_dump(i8080);
 
       //NOTE: ALL OPCODES ARE AT LEAST 1 BYTE
@@ -96,11 +96,13 @@ void emulate_cycle(cpu *i8080){
 
           case 0x00: break;
           case 0x01: opLXIB(i8080, opcode[2], opcode[1]); break;
+          case 0x03: opINXB(i8080); break;
 		  case 0x04: opINRB(i8080); break;
           case 0x05: opDCRB(i8080); break;
           case 0x06: opMVIB(i8080, opcode[1]); break;
 		  case 0x07: opRLC(i8080); break;
           case 0x09: opDADB(i8080); break;
+          case 0x0a: opLDAXB(i8080); break;
           case 0x0d: opDCRC(i8080); break;
           case 0x0e: opMVIC(i8080, opcode[1]); break;
           case 0x0f: opRRC(i8080); break;
@@ -126,11 +128,13 @@ void emulate_cycle(cpu *i8080){
 		  case 0x37: opSTC(i8080); break;
           case 0x3a: opLDAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x3c: opINRA(i8080); break;
+          case 0x3d: opDCRA(i8080); break;
 		  case 0x3e: opMVIA(i8080, opcode[1]); break;
 		  case 0x46: opMOVBM(i8080, (i8080->h << 8 | (i8080->l))); break;
 		  case 0x4e: opMOVCM(i8080, (i8080->h << 8 | (i8080->l))); break;
 		  case 0x4f: opMOVCA(i8080); break;
           case 0x56: opMOVDM(i8080, (i8080->h << 8 | (i8080->l))); break;
+          case 0x57: opMOVDA(i8080); break;
           case 0x5e: opMOVEM(i8080, (i8080->h << 8 | (i8080->l))); break;
 		  case 0x5f: opMOVEA(i8080); break;
           case 0x66: opMOVHM(i8080, (i8080->h << 8 | (i8080->l))); break;
@@ -168,6 +172,7 @@ void emulate_cycle(cpu *i8080){
           case 0xd2: opJNCadr(i8080, opcode); break;
           case 0xd3: i8080->pc++; break;
           case 0xd5: opPUSHD(i8080); break;
+          case 0xd8: opRC(i8080); break;
 		  case 0xda: opJC(i8080, opcode); break;
 		  case 0xdb: i8080->pc++; break;
           case 0xe1: opPOPH(i8080); break;
@@ -182,7 +187,7 @@ void emulate_cycle(cpu *i8080){
           case 0xfb: opEL(i8080); break;
           case 0xfe: opCPIA(i8080, opcode[1]); break;
 
-          default: fail(i8080);
+          default: fail(i8080); break;
 
       }
 	  
@@ -344,7 +349,11 @@ void opMOVAE(cpu *c){
 }
 
 void opMOVCA(cpu *c){
-	c->c = c-> a;
+	c->c = c->a;
+}
+
+void opMOVDA(cpu *c){
+	c->d = c->a;
 }
 
 void opMOVEA(cpu *c){
@@ -425,6 +434,18 @@ void opLDAXD(cpu *c) {
     c->a = c->memory[offset];
 }
 
+void opLDAXB(cpu *c) {
+    uint16_t offset = (c->b << 8) | c->c;
+    c->a = c->memory[offset];
+}
+
+void opINXB(cpu *c){
+    c->c++;
+    if(c->c == 0){
+        c->b++;
+    }
+}
+
 void opINXH(cpu *c){
     c->l++;
     if(c->l == 0){
@@ -447,6 +468,14 @@ void opINRB(cpu *c){
 void opINRA(cpu *c){
 	c->a += 1;
 	flagzsp(c, c->a);
+}
+
+void opDCRA(cpu *c){
+    uint8_t result = c->a - 1;
+    c->flags.z = (result == 0);
+    c->flags.s = (0x80 == (result & 0x80));
+    c->flags.p = parity(result, 8);
+    c->a = result;
 }
 
 void opDCRB(cpu *c){
@@ -505,6 +534,13 @@ void opRNZ(cpu *c){
 
 void opRNC(cpu* c){
 	if(c->flags.cy == 0){
+		c->pc = c->memory[c->sp] | (c->memory[c->sp +1] << 8);
+		c->sp += 2;
+	}
+}
+
+void opRC(cpu* c){
+	if(c->flags.cy != 0){
 		c->pc = c->memory[c->sp] | (c->memory[c->sp +1] << 8);
 		c->sp += 2;
 	}

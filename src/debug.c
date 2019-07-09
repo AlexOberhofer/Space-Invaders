@@ -23,6 +23,15 @@ void memory_dump(cpu *c){
 
 }
 
+int mem_compare(cpu *c, cpu *reference){
+	for(int i = 0; i < 4096; i++){
+		if(c->memory[i] != reference->memory[i]){
+			return 0;
+		}
+	}
+	return 1;
+}
+
 int compare(cpu *c1, cpu* c2){
     if(c1->pc != c2->pc){
         cpu_dump(c1);

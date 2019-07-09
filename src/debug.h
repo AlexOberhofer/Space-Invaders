@@ -25,6 +25,7 @@ IN THE SOFTWARE.
 
 void cpu_dump(cpu *c);
 void memory_dump(cpu *c);
+int mem_compare(cpu *c, cpu *reference);
 int disassemble(unsigned char *buffer, int pc);
 void stack_dmp(cpu* c);
 int compare(cpu *c1, cpu* c2);

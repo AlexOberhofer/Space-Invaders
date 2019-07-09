@@ -43,6 +43,8 @@ uint8_t input_port_multiplayer = 0;
 
 uint32_t timer = 0;
 
+cpu *c;
+
 static uint8_t COLOR_FLAG = 1;
 
 
@@ -75,7 +77,7 @@ int process_keypress(SDL_Event *e){
 
 
     if (event.type == SDL_QUIT){
-        exit(1);
+        return 0;
     }
     
 
@@ -111,7 +113,8 @@ int process_keypress(SDL_Event *e){
                     case 1: COLOR_FLAG = 0; break;
                 }
             } break;
-            case SDL_SCANCODE_T: input_port_multiplayer |= 0x04; break; //TODO: Tilt
+            case SDL_SCANCODE_T: input_port_multiplayer |= 0x04; break;
+            case SDL_SCANCODE_E: c->pc = 0x19b3; //HOTKEY Easter egg -> this is bad
         }
 
     } else if (event.type == SDL_KEYUP){
@@ -124,7 +127,7 @@ int process_keypress(SDL_Event *e){
             case SDL_SCANCODE_A: input_port &= ~0x20; break;
             case SDL_SCANCODE_S: input_port &= ~0x10; break;
             case SDL_SCANCODE_D: input_port &= ~0x40; break;
-            case SDL_SCANCODE_T: input_port_multiplayer &= 0x04; break; //TODO: Tilt
+            case SDL_SCANCODE_T: input_port_multiplayer &= 0x04; break;
         }
     }
 
@@ -210,7 +213,7 @@ int main(int argc, char *argv[])
 
     display_init();
 
-    cpu *c = init_8080();
+    c = init_8080();
 
     //DEBUG
     cpu *c2 = init_8080();
@@ -222,15 +225,12 @@ int main(int argc, char *argv[])
         printf("Could not load file into system memory.");
     }
 
-    
-
     while (run)
     {
 
         timer = SDL_GetTicks();
 
 	    SDL_PollEvent(&event);
-
 
         if (SDL_GetTicks() - timer > (1 / FPS) * 1000)
         {
@@ -241,22 +241,20 @@ int main(int argc, char *argv[])
                 if (!int_flag)
                 {
                     do_interrupt(c, 1);
-                    //do_interrupt(c2, 1);
+                    do_interrupt(c2, 1);
                     int_flag = 1;
                 }
                 else
                 {
                     do_interrupt(c, 2);
-                    //do_interrupt(c2, 2);
+                    do_interrupt(c2, 2);
                     int_flag = 0;
                 }
             }
             
-            //uint8_t *opcode2 = &c2->memory[c2->pc];
+            uint8_t *opcode2 = &c2->memory[c2->pc];
 
             for(int instrs = 0; instrs < 100; instrs++){
-
-                //process_keypress(&event);
 
                 uint8_t *opcode = &c->memory[c->pc];
 
@@ -266,31 +264,35 @@ int main(int argc, char *argv[])
                     c->a = machine_in(port);
                     c->pc += 2;
                     //DEBUG
-                    //c2->a = machine_in(port);
-                    //c2->pc += 2;
+                    c2->a = machine_in(port);
+                    c2->pc += 2;
                 }
                 else if (*opcode == 0xd3) //OUT
                 {
                     uint8_t port = opcode[1];
                     machine_out(port, c->a);
                     c->pc += 2;
-                    //machine_out(port, c2->a);
-                    //c2->pc += 2;
+                    machine_out(port, c2->a);
+                    c2->pc += 2;
                 }
                 else
                 {
-                    Emulate8080Op(c);
-                    //printf(" Input Register : %02x \n", input_port);
-                    //emulate_cycle(c);
-                    //Emulate8080Op(c2);
-                }
-            }
+                    //Emulate8080Op(c);
 
-            //if(compare(c, c2) == 0){
-              // exit(1);
-            //}
+                    emulate_cycle(c);
+                    Emulate8080Op(c2);
+                    /* 
+                    if(compare(c, c2) == 0 || mem_compare(c, c2) == 0){
+                        exit(1);
+                    } */
+
+                }
+                
+            }
             sdl_draw(c);
+            
         }
+
         run = process_keypress(&event);
     }
 
