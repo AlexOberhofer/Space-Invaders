@@ -121,6 +121,7 @@ void emulate_cycle(cpu *i8080){
           case 0x29: opDADH(i8080); break;
 		  case 0x2a: opLHLD(i8080, (opcode[2] << 8) | opcode[1]); break;
 		  case 0x2b: opDCXH(i8080); break;
+          case 0x2e: opMVIL(i8080, opcode[1]); break;
           case 0x31: opLXIsp(i8080, (opcode[2] << 8) | opcode[1]); break;
           case 0x32: opSTAadr(i8080, (opcode[2] << 8) | opcode[1]); break;
 		  case 0x35: opDCRM(i8080); break;
@@ -137,8 +138,10 @@ void emulate_cycle(cpu *i8080){
           case 0x57: opMOVDA(i8080); break;
           case 0x5e: opMOVEM(i8080, (i8080->h << 8 | (i8080->l))); break;
 		  case 0x5f: opMOVEA(i8080); break;
+          case 0x61: opMOVHC(i8080); break;
           case 0x66: opMOVHM(i8080, (i8080->h << 8 | (i8080->l))); break;
 		  case 0x67: opMOVHA(i8080); break;
+          case 0x68: opMOVLB(i8080); break;
           case 0x6f: opMOVLA(i8080); break;
 		  case 0x70: opRLC(i8080); break;
           case 0x77: opMOVMA(i8080, (i8080->h << 8 | (i8080->l))); break;
@@ -155,6 +158,7 @@ void emulate_cycle(cpu *i8080){
           case 0xaf: opXRAA(i8080); break;
 		  case 0xb0: opORAB(i8080); break;
 		  case 0xb4: opORAH(i8080); break;
+          case 0xb6: opORAM(i8080); break;
 		  case 0xc0: opRNZ(i8080); break;
           case 0xc1: opPOPB(i8080); break;
           case 0xc2: opJMPNZ(i8080, opcode); break;
@@ -184,6 +188,7 @@ void emulate_cycle(cpu *i8080){
           case 0xf1: opPOPPSW(i8080); break;
           case 0xf5: opPUSHPSW(i8080); break;
 		  case 0xf6: opORI(i8080, opcode[1]); break;
+          case 0xfa: opJM(i8080, (opcode[2] << 8 | opcode[1])); break;
           case 0xfb: opEL(i8080); break;
           case 0xfe: opCPIA(i8080, opcode[1]); break;
 
@@ -251,6 +256,11 @@ void opJNCadr(cpu *c, uint8_t *opcode){
 void opLXIsp(cpu* c, uint16_t stack_val){
     c->sp = stack_val;
     c->pc +=2;
+}
+
+void opMVIL(cpu* c, uint8_t val){
+    c->l = val;
+    c->pc++;
 }
 
 void opMVIB(cpu* c, uint8_t val){
@@ -336,6 +346,10 @@ void opMOVLA(cpu *c){
     c->l = c->a;
 }
 
+void opMOVLB(cpu *c){
+    c->l = c->b;
+}
+
 void opMOVAD(cpu *c){
     c->a = c->d;
 }
@@ -370,6 +384,10 @@ void opMOVAB(cpu *c){
 
 void opMOVAL(cpu *c){
 	c->a = c->l;
+}
+
+void opMOVHC(cpu *c){
+    c->c = c->h;
 }
 
 void opDADB(cpu *c){
@@ -581,6 +599,8 @@ void opPUSHPSW(cpu *c){
 }
 
 void opPOPPSW(cpu *c){
+    stack_pop(c, &c->a, (unsigned char *) & c->flags);
+    /*
     c->a = c->memory[c->sp+1];
     uint8_t psw = c->memory[c->sp];
     c->flags.z  = (0x01 == (psw & 0x01));
@@ -589,6 +609,7 @@ void opPOPPSW(cpu *c){
     c->flags.cy = (0x05 == (psw & 0x08));
     c->flags.ac = (0x10 == (psw & 0x10));
     c->sp += 2;
+    */
 }
 
 void opPOPH(cpu *c){
@@ -692,6 +713,11 @@ void opORAH(cpu *c){
 	logicFlagA(c);
 }
 
+void opORAM(cpu *c){
+    c->a = c->memory[(c-> h << 8 | c-> l)];
+    logicFlagA(c);
+}
+
 void opXTHL(cpu *c){
 	uint8_t hval = c->h;
 	uint8_t lval = c->l;
@@ -749,5 +775,12 @@ void opADDM(cpu *c){
 	c->a = (res & 0xff);
 }
 
+void opJM(cpu *c, uint16_t offset){
+    if(c->flags.s != 0){
+        c->pc = offset;
+    } else {
+        c->pc += 2;
+    }
 
+}
 

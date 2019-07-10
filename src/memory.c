@@ -21,10 +21,15 @@ IN THE SOFTWARE.
 #include "i8080.h"
 
 void stack_push(cpu *c, uint8_t high, uint8_t low){
-
     c->sp = c->sp - 2;
     c->memory[c->sp + 1] = high;
     c->memory[c->sp] = low;  
+}
+
+void stack_pop(cpu *c, uint8_t *high, uint8_t *low){
+    *low = c->memory[c->sp];
+    *high = c->memory[c->sp+1];
+    c->sp += 2;
 }
 
 int load_file_to_memory(char *file_name, cpu *c, uint16_t address_start){

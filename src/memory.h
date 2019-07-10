@@ -23,3 +23,4 @@ IN THE SOFTWARE.
 
 int load_file_to_memory(char *file_name, cpu *c, uint16_t address_start);
 void stack_push(cpu *c, uint8_t high, uint8_t low);
+void stack_pop(cpu *c, uint8_t *high, uint8_t *low);

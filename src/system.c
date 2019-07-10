@@ -281,10 +281,10 @@ int main(int argc, char *argv[])
 
                     emulate_cycle(c);
                     Emulate8080Op(c2);
-                    /* 
+                     
                     if(compare(c, c2) == 0 || mem_compare(c, c2) == 0){
                         exit(1);
-                    } */
+                    } 
 
                 }
                 
