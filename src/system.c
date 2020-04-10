@@ -199,7 +199,7 @@ void machine_out(uint8_t port, uint8_t value){
     }
 }
 
-int main(int argc, char *argv[])
+int WinMain(int argc, char *argv[])
 {
 
     int run = 1;
@@ -214,10 +214,10 @@ int main(int argc, char *argv[])
 
     //DEBUG
     cpu *c2 = init_8080();
-    load_file_to_memory("./res/invaders.rom", c2, 0x00);
+    load_file_to_memory("./invaders.rom", c2, 0x00);
     
 
-    if (load_file_to_memory("./res/invaders.rom", c, 0x00) != 0)
+    if (load_file_to_memory("./invaders.rom", c, 0x00) != 0)
     {
         printf("Could not load file into system memory.");
     }

@@ -1,13 +1,13 @@
-CC=clang
+CC=x86_64-w64-mingw32-gcc
 DEPS=debug.h i8080.h memory.h
-TARGET=invaders
+TARGET=invaders.exe
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 makeinvaders: src/debug.o src/i8080.o src/system.o src/memory.o
 	@mkdir -p bin
-	$(CC) -g -std=c11 -Wall -o ./bin/$(TARGET) ./src/debug.c ./src/memory.c ./src/i8080.c ./src/system.c `sdl2-config --cflags --libs`
+	$(CC) -g -std=c11 -Bstatic -Wall -o ./bin/$(TARGET) ./src/debug.c ./src/memory.c ./src/i8080.c ./src/system.c `sdl2-config --cflags --libs`
 
 clean:
 	rm ./bin/$(TARGET)
