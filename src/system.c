@@ -199,7 +199,7 @@ void machine_out(uint8_t port, uint8_t value){
     }
 }
 
-int WinMain(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
     int run = 1;
@@ -300,4 +300,10 @@ int WinMain(int argc, char *argv[])
     free(c2);
 
     return 0;
+}
+
+int WinMain(int argc, char *argv[])
+{
+	main(argc, argv);
+	return 0;
 }
