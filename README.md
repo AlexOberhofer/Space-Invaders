@@ -4,11 +4,10 @@
   <img src="https://github.com/AlexOberhofer/Space-Invaders/raw/master/doc/attract.PNG" alt="Chip 8 Image"/>
 </p>
 
-An Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. This emulator is still under development.
+A multiplatform Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. This emulator is still under development.
 
 
 ## Building
-A makefile is provided for gnu/linux systems. This requires the SDL2 library, clang, and make to build.
 
 Clone this repository
 
@@ -21,13 +20,27 @@ Switch to working directory
 $ cd Space-Invaders
 ```
 
-Build
+### UNIX / MACOS
+
+
+A makefile is provided for gnu/linux systems. This requires the SDL2 library, clang, and make to build. These can all be installed through brew on Mac OSX, or your favorite unix based package manager for *nix systems.
+
 
 ```
 $ make
 ```
 
+### WINDOWS
+
+A bash script to cross compile a windows executable using mingw-w64 is provided in the /scripts/ directory 
+
+```
+$ ./build_win.sh
+```
+
 ## Running
+
+### UNIX / MACOS
 
 This emulator requires a singular rom file "invaders.rom" to be located in the /res/ directory. A single rom file can be created from the individual space invaders roms by following the shell command below.
 
@@ -35,13 +48,21 @@ This emulator requires a singular rom file "invaders.rom" to be located in the /
 $ cat invaders.h invaders.g invaders.f invaders.e > invaders.rom
 ```
 
-The program can be run with the following command when compiled from the root project directory.
+The invaders.rom file must be placed in the same directory as the space invaders executable. The executable is output in the /bin/ folder.
 
 ```
-$ ./bin/invaders
+$ cd bin/
 ```
 
-This project is currently a work in progress. 
+```
+$ ./invaders 
+```
+
+### Windows
+
+The executable requires the invaders.rom file to be in the same directory as invaders.exe. SDL2.dll is also required to be placed in the same directory as the windows executable.
+
+The emulator can be started by simply clicking invaders.exe.
 
 ## Controls
 

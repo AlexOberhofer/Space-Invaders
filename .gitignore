@@ -4,6 +4,5 @@ src/disassembler.o
 bin/
 .buildconfig
 .atom-dbg.cson
-res/invaders.zip
-res/invaders.rom
+res/invaders.*
 .vscode
