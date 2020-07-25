@@ -4,7 +4,9 @@
   <img src="https://github.com/AlexOberhofer/Space-Invaders/raw/master/doc/attract.PNG" alt="Chip 8 Image"/>
 </p>
 
-A multiplatform Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. This emulator is still under development.
+A multiplatform Emulation of the Intel 8080 version of Space Invaders, implemented in C using SDL2. <br>
+
+The main cpu core is still in development. A debug core is hooked in and provides functionality in its place.
 
 
 ## Building
